@@ -1,7 +1,6 @@
 # 📇 ewshelper 📇
 
 ewshelper is a little wrapper around [php-ews](https://github.com/jamesiarmes/php-ews) and helps you manage your exchange contacts via php.
-
 it can handle very big lists also helps you normalize your contacts data.
 
 ## installation
@@ -17,25 +16,30 @@ then add this to your files:
 ```php
 require __DIR__ . '/vendor/autoload.php';
 use vielhuber\ewshelper\ewshelper;
-
-$ewshelper = new ewshelper('host', 'username', 'password');
+$ewshelper = new ewshelper('**host**', '**username**', '**password**');
 ```
 
 ## usage
 
-### reading
+#### get all contacts
 
 ```php
 $ewshelper->getContacts();
 ```
 
+#### get contact by id
+
 ```php
 $ewshelper->getContact('**id**');
 ```
 
+#### normalize name and phones
+
 ```php
 $ewshelper->normalizeData();
 ```
+
+#### add a new contact
 
 ```php
 $ewshelper->addContact([
@@ -47,9 +51,13 @@ $ewshelper->addContact([
 ]);
 ```
 
+#### remove a contact
+
 ```php
 $ewshelper->removeContact('**id**');
 ```
+
+#### update a contact
 
 ```php
 $ewshelper->updateContact('**id**', [
