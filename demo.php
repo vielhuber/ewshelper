@@ -39,13 +39,6 @@ if ($switch == 4) {
 }
 
 if ($switch == 5) {
-    $response = $ewshelper->removeContact(
-        'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAUitU4ZAAA='
-    );
-    var_dump($response);
-}
-
-if ($switch == 6) {
     $response = $ewshelper->updateContact(
         'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAD8XlYoAAA=',
         [
@@ -55,6 +48,13 @@ if ($switch == 6) {
             'emails' => ['felix.alcala@agilebytes.de'],
             'phones' => ['private' => ['08921558216'], 'business' => ['+49/1732658121999']]
         ]
+    );
+    var_dump($response);
+}
+
+if ($switch == 6) {
+    $response = $ewshelper->removeContact(
+        'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAUitU4ZAAA='
     );
     var_dump($response);
 }

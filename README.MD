@@ -1,6 +1,6 @@
 # 📇 ewshelper 📇
 
-ewshelper is a little wrapper around [php-ews](https://github.com/jamesiarmes/php-ews) and helps you manage your exchange contacts via php.
+ewshelper is a little wrapper around [php-ews](https://github.com/jamesiarmes/php-ews) and helps you manage your exchange contacts via php.\
 it can handle very big lists also helps you normalize your contacts data.
 
 ## installation
@@ -51,12 +51,6 @@ $ewshelper->addContact([
 ]);
 ```
 
-#### remove a contact
-
-```php
-$ewshelper->removeContact('**id**');
-```
-
 #### update a contact
 
 ```php
@@ -67,4 +61,10 @@ $ewshelper->updateContact('**id**', [
     'emails' => ['max@mustermann.de'],
     'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']]
 ]);
+```
+
+#### remove a contact
+
+```php
+$ewshelper->removeContact('**id**');
 ```
