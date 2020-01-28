@@ -47,7 +47,9 @@ $ewshelper->addContact([
     'last_name' => 'Mustermann',
     'company_name' => 'Musterfirma',
     'emails' => ['max@mustermann.de'],
-    'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']]
+    'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
+    'url' => 'https://www.mustermann.de',
+    'categories' => ['test']
 ]);
 ```
 
@@ -59,7 +61,9 @@ $ewshelper->updateContact('**id**', [
     'last_name' => 'Mustermann',
     'company_name' => 'Musterfirma',
     'emails' => ['max@mustermann.de'],
-    'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']]
+    'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
+    'url' => 'https://www.mustermann.de',
+    'categories' => ['test']
 ]);
 ```
 
@@ -68,3 +72,8 @@ $ewshelper->updateContact('**id**', [
 ```php
 $ewshelper->removeContact('**id**');
 ```
+
+## note on outlook
+
+when deleting phone numbers or making a lot of changes to existing contacts,\
+it is recommended to use the function [clear offline items](https://www.extendoffice.com/documents/outlook/1749-outlook-clear-offline-items-undo.html).

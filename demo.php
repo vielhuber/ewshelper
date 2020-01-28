@@ -30,10 +30,15 @@ if ($switch == 3) {
 if ($switch == 4) {
     $response = $ewshelper->addContact([
         'first_name' => '_DIES IST',
-        'last_name' => 'EIN TEST',
+        'last_name' => '_EIN TEST',
         'company_name' => 'TESTFIRMA',
         'emails' => ['david@vielhuber.de'],
-        'phones' => ['private' => ['+4915158754691'], 'business' => ['+4989546564']]
+        'phones' => [
+            'private' => ['+4915158754691', '+4915158754691', '+4915158754691', '+4915158754691'],
+            'business' => ['+4989546564', '+4915158754691', '+4915158754691', '+4989546564']
+        ],
+        'url' => 'https://www.mustermann.de',
+        'categories' => ['test']
     ]);
     var_dump($response);
 }
@@ -46,7 +51,9 @@ if ($switch == 5) {
             'last_name' => 'Alcala',
             'company_name' => 'Agilebytes',
             'emails' => ['felix.alcala@agilebytes.de'],
-            'phones' => ['private' => ['08921558216'], 'business' => ['+49/1732658121999']]
+            'phones' => ['private' => ['08921558216'], 'business' => ['+49/1732658121999']],
+            'url' => 'https://www.mustermann.de',
+            'categories' => ['test']
         ]
     );
     var_dump($response);

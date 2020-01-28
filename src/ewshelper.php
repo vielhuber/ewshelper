@@ -43,6 +43,7 @@ use jamesiarmes\PhpEws\Request\DeleteItemType;
 use jamesiarmes\PhpEws\Enumeration\DisposalType;
 use jamesiarmes\PhpEws\Enumeration\DictionaryURIType;
 use jamesiarmes\PhpEws\Type\DeleteItemFieldType;
+use jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
 
 class ewshelper
 {
@@ -126,13 +127,17 @@ class ewshelper
                 foreach ($contacts__value->PhoneNumbers->Entry as $phones__value) {
                     if (
                         $phones__value->Key === PhoneNumberKeyType::HOME_PHONE ||
-                        $phones__value->Key === PhoneNumberKeyType::HOME_PHONE_2
+                        $phones__value->Key === PhoneNumberKeyType::HOME_PHONE_2 ||
+                        $phones__value->Key === PhoneNumberKeyType::OTHER_PHONE ||
+                        $phones__value->Key === PhoneNumberKeyType::MOBILE_PHONE
                     ) {
                         $phones['private'][] = $phones__value->_;
                     }
                     if (
                         $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE ||
-                        $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE_2
+                        $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE_2 ||
+                        $phones__value->Key === PhoneNumberKeyType::COMPANY_MAIN_PHONE ||
+                        $phones__value->Key === PhoneNumberKeyType::PAGER
                     ) {
                         $phones['business'][] = $phones__value->_;
                     }
@@ -140,8 +145,8 @@ class ewshelper
             }
             $contacts[$contacts__key] = [
                 'id' => $contacts__value->ItemId->Id,
-                'first_name' => $contacts__value->CompleteName->FirstName,
-                'last_name' => $contacts__value->CompleteName->LastName,
+                'first_name' => @$contacts__value->GivenName != '' ? $contacts__value->GivenName : '',
+                'last_name' => @$contacts__value->Surname != '' ? $contacts__value->Surname : '',
                 'company_name' => $contacts__value->CompanyName,
                 'emails' => $emails,
                 'phones' => $phones,
@@ -162,10 +167,20 @@ class ewshelper
         } else {
             $contacts = [$this->getContact($id)];
         }
+
         foreach ($contacts as $contacts__value) {
-            $name = trim(
-                $contacts__value['obj']->CompleteName->LastName . ' ' . $contacts__value['obj']->CompleteName->FirstName
-            );
+            $fullname = [];
+            if (@$contacts__value['obj']->Surname != '') {
+                $fullname[] = trim($contacts__value['obj']->Surname);
+            }
+            if (@$contacts__value['obj']->GivenName != '') {
+                $fullname[] = trim($contacts__value['obj']->GivenName);
+            }
+            if (empty($fullname) && @$contacts__value['obj']->CompanyName != '') {
+                $fullname[] = trim($contacts__value['obj']->CompanyName);
+            }
+            $fullname = implode(' ', $fullname);
+            $fullname = trim($fullname);
 
             $change = new ItemChangeType();
             $change->ItemId = new ItemIdType();
@@ -176,7 +191,7 @@ class ewshelper
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_FILE_AS;
             $field->Contact = new ContactItemType();
-            $field->Contact->FileAs = $name;
+            $field->Contact->FileAs = $fullname;
             $change->Updates->SetItemField[] = $field;
 
             $field = new SetItemFieldType();
@@ -190,15 +205,51 @@ class ewshelper
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_SUBJECT;
             $field->Contact = new ContactItemType();
-            $field->Contact->Subject = $name;
+            $field->Contact->Subject = $fullname;
             $change->Updates->SetItemField[] = $field;
 
             $field = new SetItemFieldType();
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_DISPLAY_NAME;
             $field->Contact = new ContactItemType();
-            $field->Contact->DisplayName = $name;
+            $field->Contact->DisplayName = $fullname;
             $change->Updates->SetItemField[] = $field;
+
+            if (@$contacts__value['obj']->Surname != '') {
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_SURNAME;
+                $field->Contact = new ContactItemType();
+                $field->Contact->Surname = trim($contacts__value['obj']->Surname);
+                $change->Updates->SetItemField[] = $field;
+            }
+
+            if (@$contacts__value['obj']->GivenName != '') {
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_GIVEN_NAME;
+                $field->Contact = new ContactItemType();
+                $field->Contact->GivenName = trim($contacts__value['obj']->GivenName);
+                $change->Updates->SetItemField[] = $field;
+            }
+
+            if (@$contacts__value['obj']->CompanyName != '') {
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_COMPANY_NAME;
+                $field->Contact = new ContactItemType();
+                $field->Contact->CompanyName = trim($contacts__value['obj']->CompanyName);
+                $change->Updates->SetItemField[] = $field;
+            }
+
+            if (@$contacts__value['obj']->BusinessHomePage != '') {
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_BUSINESS_HOME_PAGE;
+                $field->Contact = new ContactItemType();
+                $field->Contact->BusinessHomePage = __url_normalize($contacts__value['obj']->BusinessHomePage);
+                $change->Updates->SetItemField[] = $field;
+            }
 
             if (!empty(@$contacts__value['obj']->PhoneNumbers->Entry)) {
                 foreach ($contacts__value['obj']->PhoneNumbers->Entry as $phones__value) {
@@ -244,53 +295,82 @@ class ewshelper
     {
         $request = new CreateItemType();
         $contact = new ContactItemType();
-        $contact->GivenName = $data['first_name'];
-        $contact->Surname = $data['last_name'];
-        $contact->CompanyName = $data['company_name'];
-        $contact->EmailAddresses = new EmailAddressDictionaryType();
-        $contact->PhoneNumbers = new PhoneNumberDictionaryType();
 
-        foreach ($data['emails'] as $emails__key => $emails__value) {
-            $email = new EmailAddressDictionaryEntryType();
-            if ($emails__key === 0) {
-                $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_1;
-            } elseif ($emails__key === 1) {
-                $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_2;
-            } elseif ($emails__key === 2) {
-                $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_3;
-            } else {
-                continue;
-            }
-            $email->_ = $emails__value;
-            $contact->EmailAddresses->Entry[] = $email;
+        if (@$data['first_name'] != '') {
+            $contact->GivenName = $data['first_name'];
+        }
+        if (@$data['last_name'] != '') {
+            $contact->Surname = $data['last_name'];
+        }
+        if (@$data['company_name'] != '') {
+            $contact->CompanyName = $data['company_name'];
+        }
+        if (@$data['url'] != '') {
+            $contact->BusinessHomePage = $data['url'];
         }
 
-        foreach ($data['phones'] as $phones__key => $phones__value) {
-            foreach ($phones__value as $phones__value__key => $phones__value__value) {
-                $phone = new PhoneNumberDictionaryEntryType();
+        if (!empty(@$data['categories'])) {
+            $contact->Categories = new ArrayOfStringsType();
+            foreach ($data['categories'] as $categories__value) {
+                $contact->Categories->String[] = $categories__value;
+            }
+        }
 
-                if ($phones__key === 'private') {
-                    if ($phones__value__key === 0) {
-                        $phone->Key = PhoneNumberKeyType::HOME_PHONE;
-                    } elseif ($phones__value__key === 1) {
-                        $phone->Key = PhoneNumberKeyType::HOME_PHONE_2;
-                    } else {
-                        continue;
-                    }
-                } elseif ($phones__key === 'business') {
-                    if ($phones__value__key === 0) {
-                        $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE;
-                    } elseif ($phones__value__key === 1) {
-                        $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE_2;
-                    } else {
-                        continue;
-                    }
+        if (!empty(@$data['emails'])) {
+            $contact->EmailAddresses = new EmailAddressDictionaryType();
+            foreach ($data['emails'] as $emails__key => $emails__value) {
+                $email = new EmailAddressDictionaryEntryType();
+                if ($emails__key === 0) {
+                    $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_1;
+                } elseif ($emails__key === 1) {
+                    $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_2;
+                } elseif ($emails__key === 2) {
+                    $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_3;
                 } else {
                     continue;
                 }
+                $email->_ = $emails__value;
+                $contact->EmailAddresses->Entry[] = $email;
+            }
+        }
 
-                $phone->_ = $phones__value__value;
-                $contact->PhoneNumbers->Entry[] = $phone;
+        if (!empty(@$data['phones'])) {
+            $contact->PhoneNumbers = new PhoneNumberDictionaryType();
+            foreach ($data['phones'] as $phones__key => $phones__value) {
+                foreach ($phones__value as $phones__value__key => $phones__value__value) {
+                    $phone = new PhoneNumberDictionaryEntryType();
+
+                    if ($phones__key === 'private') {
+                        if ($phones__value__key === 0) {
+                            $phone->Key = PhoneNumberKeyType::HOME_PHONE;
+                        } elseif ($phones__value__key === 1) {
+                            $phone->Key = PhoneNumberKeyType::HOME_PHONE_2;
+                        } elseif ($phones__value__key === 2) {
+                            $phone->Key = PhoneNumberKeyType::OTHER_PHONE;
+                        } elseif ($phones__value__key === 3) {
+                            $phone->Key = PhoneNumberKeyType::MOBILE_PHONE;
+                        } else {
+                            continue;
+                        }
+                    } elseif ($phones__key === 'business') {
+                        if ($phones__value__key === 0) {
+                            $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE;
+                        } elseif ($phones__value__key === 1) {
+                            $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE_2;
+                        } elseif ($phones__value__key === 2) {
+                            $phone->Key = PhoneNumberKeyType::COMPANY_MAIN_PHONE;
+                        } elseif ($phones__value__key === 3) {
+                            $phone->Key = PhoneNumberKeyType::PAGER;
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    $phone->_ = $phones__value__value;
+                    $contact->PhoneNumbers->Entry[] = $phone;
+                }
             }
         }
 
@@ -363,6 +443,27 @@ class ewshelper
             $change->Updates->SetItemField[] = $field;
         }
 
+        if (@$data['url'] != '') {
+            $field = new SetItemFieldType();
+            $field->FieldURI = new PathToUnindexedFieldType();
+            $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_BUSINESS_HOME_PAGE;
+            $field->Contact = new ContactItemType();
+            $field->Contact->BusinessHomePage = $data['url'];
+            $change->Updates->SetItemField[] = $field;
+        }
+
+        if (!empty(@$data['categories'])) {
+            $field = new SetItemFieldType();
+            $field->FieldURI = new PathToUnindexedFieldType();
+            $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_CATEGORIES;
+            $field->Contact = new ContactItemType();
+            $field->Contact->Categories = new ArrayOfStringsType();
+            foreach ($data['categories'] as $categories__value) {
+                $field->Contact->Categories->String[] = $categories__value;
+            }
+            $change->Updates->SetItemField[] = $field;
+        }
+
         if (!empty(@$data['emails'])) {
             foreach (['EMAIL_ADDRESS_1', 'EMAIL_ADDRESS_2', 'EMAIL_ADDRESS_3'] as $emails__key => $email__value) {
                 $constant = constant('jamesiarmes\PhpEws\Enumeration\EmailAddressKeyType::' . $email__value);
@@ -391,36 +492,34 @@ class ewshelper
 
         if (!empty(@$data['phones'])) {
             foreach (
-                ['HOME_PHONE', 'HOME_PHONE_2', 'BUSINESS_PHONE', 'BUSINESS_PHONE_2']
+                [
+                    'private' => ['HOME_PHONE', 'HOME_PHONE_2', 'OTHER_PHONE', 'MOBILE_PHONE'],
+                    'business' => ['BUSINESS_PHONE', 'BUSINESS_PHONE_2', 'COMPANY_MAIN_PHONE', 'PAGER']
+                ]
                 as $phones__key => $phones__value
             ) {
-                $constant = constant('jamesiarmes\PhpEws\Enumeration\PhoneNumberKeyType::' . $phones__value);
+                foreach ($phones__value as $phones__value__key => $phones__value__value) {
+                    $constant = constant('jamesiarmes\PhpEws\Enumeration\PhoneNumberKeyType::' . $phones__value__value);
 
-                if (
-                    @$data['phones'][strpos($phones__value, 'HOME') !== false ? 'private' : 'business'][
-                        $phones__key % 2
-                    ] != ''
-                ) {
-                    $field = new SetItemFieldType();
-                    $field->IndexedFieldURI = new PathToIndexedFieldType();
-                    $field->IndexedFieldURI->FieldURI = DictionaryURIType::CONTACTS_PHONE_NUMBER;
-                    $field->IndexedFieldURI->FieldIndex = $constant;
-                    $field->Contact = new ContactItemType();
-                    $field->Contact->PhoneNumbers = new PhoneNumberDictionaryType();
-                    $entry = new PhoneNumberDictionaryEntryType();
-                    $entry->_ =
-                        $data['phones'][strpos($phones__value, 'HOME') !== false ? 'private' : 'business'][
-                            $phones__key % 2
-                        ];
-                    $entry->Key = $constant;
-                    $field->Contact->PhoneNumbers->Entry[] = $entry;
-                    $change->Updates->SetItemField[] = $field;
-                } else {
-                    $field = new DeleteItemFieldType();
-                    $field->IndexedFieldURI = new PathToIndexedFieldType();
-                    $field->IndexedFieldURI->FieldURI = DictionaryURIType::CONTACTS_PHONE_NUMBER;
-                    $field->IndexedFieldURI->FieldIndex = $constant;
-                    $change->Updates->DeleteItemField[] = $field;
+                    if (@$data['phones'][$phones__key][$phones__value__key] != '') {
+                        $field = new SetItemFieldType();
+                        $field->IndexedFieldURI = new PathToIndexedFieldType();
+                        $field->IndexedFieldURI->FieldURI = DictionaryURIType::CONTACTS_PHONE_NUMBER;
+                        $field->IndexedFieldURI->FieldIndex = $constant;
+                        $field->Contact = new ContactItemType();
+                        $field->Contact->PhoneNumbers = new PhoneNumberDictionaryType();
+                        $entry = new PhoneNumberDictionaryEntryType();
+                        $entry->_ = $data['phones'][$phones__key][$phones__value__key];
+                        $entry->Key = $constant;
+                        $field->Contact->PhoneNumbers->Entry[] = $entry;
+                        $change->Updates->SetItemField[] = $field;
+                    } else {
+                        $field = new DeleteItemFieldType();
+                        $field->IndexedFieldURI = new PathToIndexedFieldType();
+                        $field->IndexedFieldURI->FieldURI = DictionaryURIType::CONTACTS_PHONE_NUMBER;
+                        $field->IndexedFieldURI->FieldIndex = $constant;
+                        $change->Updates->DeleteItemField[] = $field;
+                    }
                 }
             }
         }
