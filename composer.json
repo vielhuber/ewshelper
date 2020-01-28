@@ -1,0 +1,16 @@
+{
+    "name": "vielhuber/ewshelper",
+    "description": "Manage exchange contacts with a breeze.",
+    "require": {
+        "php": ">=5.6",
+        "php-ews/php-ews": "^1.0",
+        "vielhuber/stringhelper": "^2.9",
+        "vlucas/phpdotenv": "^4.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "vielhuber\\ewshelper\\": "src/"
+        }
+    }
+}
