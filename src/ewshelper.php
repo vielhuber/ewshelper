@@ -150,6 +150,8 @@ class ewshelper
                 'company_name' => $contacts__value->CompanyName,
                 'emails' => $emails,
                 'phones' => $phones,
+                'url' => $contacts__value->BusinessHomePage,
+                'categories' => @$contacts__value->Categories->String != '' ? $contacts__value->Categories->String : [],
                 'obj' => $contacts__value
             ];
         }
