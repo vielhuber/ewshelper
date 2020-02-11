@@ -559,6 +559,17 @@ class ewshelper
             }
         }
 
+        // normalize phone beforehand (this is costly)
+        foreach ($contacts_new as $contacts_new__key => $contacts_new__value) {
+            foreach ($contacts_new__value['phones'] as $phones__key => $phones__value) {
+                foreach ($phones__value as $phones__value__key => $phones__value__value) {
+                    $contacts_new[$contacts_new__key]['phones'][$phones__key][$phones__value__key] = __phone_normalize(
+                        $phones__value__value
+                    );
+                }
+            }
+        }
+
         // get array of contacts that do not exist in new data but in exchange
         $contacts_to_remove = [];
         foreach ($contacts_outlook as $contacts_outlook__value) {
@@ -620,9 +631,6 @@ class ewshelper
             }
 
             foreach (${$contact}['phones'] as $phones__key => $phones__value) {
-                foreach ($phones__value as $phones__value__key => $phones__value__value) {
-                    ${$contact}['phones'][$phones__key][$phones__value__key] = __phone_normalize($phones__value__value);
-                }
                 ${$contact}['phones'][$phones__key] = array_slice(${$contact}['phones'][$phones__key], 0, 4);
             }
 
