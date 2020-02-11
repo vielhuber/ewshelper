@@ -559,32 +559,18 @@ class ewshelper
             }
         }
 
-        // normalize provided data
-        foreach ($contacts_new as $contacts_new__key => $contacts_new__value) {
-            foreach ($contacts_new__value['phones'] as $phones__key => $phones__value) {
-                foreach ($phones__value as $phones__value__key => $phones__value__value) {
-                    $contacts_new[$contacts_new__key]['phones'][$phones__key][$phones__value__key] = __phone_normalize(
-                        $phones__value__value
-                    );
-                }
-            }
-        }
-
         // get array of contacts that do not exist in new data but in exchange
         $contacts_to_remove = [];
         foreach ($contacts_outlook as $contacts_outlook__value) {
             $to_remove = true;
-            $id = $contacts_outlook__value['id'];
-            unset($contacts_outlook__value['id']);
-            unset($contacts_outlook__value['obj']);
             foreach ($contacts_new as $contacts_new__value) {
-                if ($contacts_outlook__value == $contacts_new__value) {
+                if ($this->syncContactsIsEqual($contacts_outlook__value, $contacts_new__value)) {
                     $to_remove = false;
                     break;
                 }
             }
             if ($to_remove === true) {
-                $contacts_to_remove[] = $id;
+                $contacts_to_remove[] = $contacts_outlook__value['id'];
             }
         }
 
@@ -593,9 +579,7 @@ class ewshelper
         foreach ($contacts_new as $contacts_new__value) {
             $to_create = true;
             foreach ($contacts_outlook as $contacts_outlook__value) {
-                unset($contacts_outlook__value['id']);
-                unset($contacts_outlook__value['obj']);
-                if ($contacts_outlook__value == $contacts_new__value) {
+                if ($this->syncContactsIsEqual($contacts_outlook__value, $contacts_new__value)) {
                     $to_create = false;
                     break;
                 }
@@ -623,5 +607,32 @@ class ewshelper
                 'created' => count($contacts_to_create)
             ]
         ];
+    }
+
+    private function syncContactsIsEqual($a, $b)
+    {
+        foreach (['a', 'b'] as $contact) {
+            if (@${$contact}['id'] != '') {
+                unset(${$contact}['id']);
+            }
+            if (@${$contact}['obj'] != '') {
+                unset(${$contact}['obj']);
+            }
+
+            foreach (${$contact}['phones'] as $phones__key => $phones__value) {
+                foreach ($phones__value as $phones__value__key => $phones__value__value) {
+                    ${$contact}['phones'][$phones__key][$phones__value__key] = __phone_normalize($phones__value__value);
+                }
+                ${$contact}['phones'][$phones__key] = array_slice(${$contact}['phones'][$phones__key], 0, 4);
+            }
+
+            ${$contact}['emails'] = array_slice(${$contact}['emails'], 0, 3);
+
+            sort(${$contact}['emails']);
+            sort(${$contact}['phones']['private']);
+            sort(${$contact}['phones']['business']);
+        }
+
+        return $a == $b;
     }
 }

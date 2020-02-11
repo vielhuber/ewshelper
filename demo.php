@@ -85,6 +85,24 @@ if ($switch == 7) {
             'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
             'url' => 'https://www.mustermann.de',
             'categories' => ['test']
+        ],
+        [
+            'first_name' => 'David',
+            'last_name' => 'Mustermann',
+            'company_name' => 'Musterfirma',
+            'emails' => [
+                'erika@mustermann.de1',
+                'erika@mustermann.de2',
+                'erika@mustermann.de3',
+                'erika@mustermann.de4',
+                'erika@mustermann.de5'
+            ],
+            'phones' => [
+                'private' => ['0123456781', '0123456782', '0123456783', '0123456784', '0123456785'],
+                'business' => ['0123456781', '0123456782', '0123456783', '0123456784', '0123456785']
+            ],
+            'url' => 'https://www.mustermann.de',
+            'categories' => ['test']
         ]
     ]);
     var_dump($response);
