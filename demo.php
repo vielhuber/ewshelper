@@ -17,7 +17,7 @@ if ($switch == 1) {
 
 if ($switch == 2) {
     $response = $ewshelper->getContact(
-        'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAD8XlYoAAA='
+        'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAUitU5XAAA='
     );
     var_dump($response);
 }

@@ -44,6 +44,8 @@ use jamesiarmes\PhpEws\Enumeration\DisposalType;
 use jamesiarmes\PhpEws\Enumeration\DictionaryURIType;
 use jamesiarmes\PhpEws\Type\DeleteItemFieldType;
 use jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
+use jamesiarmes\PhpEws\Request\GetItemType;
+use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
 
 class ewshelper
 {
@@ -120,6 +122,38 @@ class ewshelper
             if (!empty(@$contacts__value->EmailAddresses->Entry)) {
                 foreach ($contacts__value->EmailAddresses->Entry as $emails__value) {
                     $emails[] = $emails__value->_;
+                }
+                // for any internal user exchange responds with a link like "/o=exchange/ou=Exchange Administrative Group/..."
+                // see: https://social.technet.microsoft.com/Forums/exchange/de-DE/e78bd9ad-4ec3-4f2d-9939-747cafe77faa/how-to-resolve-the-email-address-in-this-form-oabcdouexchange-administrative-group?forum=exchangesvrdevelopment
+                // we fix this weird behaviour by calling GetItem directly
+                $fix_emails = false;
+                foreach ($emails as $emails__value) {
+                    if (strpos($emails__value, 'o=exchange/ou=Exchange Administrative Group') !== false) {
+                        $fix_emails = true;
+                    }
+                }
+                if ($fix_emails === true) {
+                    $emails = [];
+                    $request = new GetItemType();
+                    $request->ItemShape = new ItemResponseShapeType();
+                    $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
+                    $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
+                    $item = new ItemIdType();
+                    $item->Id = $contacts__value->ItemId->Id;
+                    $request->ItemIds->ItemId[] = $item;
+                    $response = $this->client->GetItem($request);
+                    foreach ($response->ResponseMessages->GetItemResponseMessage as $response_message) {
+                        if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+                            continue;
+                        }
+                        foreach ($response_message->Items->Contact as $item) {
+                            if (!empty(@$item->EmailAddresses->Entry)) {
+                                foreach ($item->EmailAddresses->Entry as $emails__value) {
+                                    $emails[] = $emails__value->_;
+                                }
+                            }
+                        }
+                    }
                 }
             }
             $phones = ['private' => [], 'business' => []];
@@ -560,8 +594,17 @@ class ewshelper
             }
         }
 
-        // normalize phone beforehand (this is costly)
+        // normalize data beforehand (this is costly)
         foreach ($contacts_new as $contacts_new__key => $contacts_new__value) {
+            if (@$contacts_new__value['first_name'] != '') {
+                $contacts_new[$contacts_new__key]['first_name'] = trim($contacts_new__value['first_name']);
+            }
+            if (@$contacts_new__value['last_name'] != '') {
+                $contacts_new[$contacts_new__key]['last_name'] = trim($contacts_new__value['last_name']);
+            }
+            if (@$contacts_new__value['company_name'] != '') {
+                $contacts_new[$contacts_new__key]['company_name'] = trim($contacts_new__value['company_name']);
+            }
             foreach ($contacts_new__value['phones'] as $phones__key => $phones__value) {
                 foreach ($phones__value as $phones__value__key => $phones__value__value) {
                     $contacts_new[$contacts_new__key]['phones'][$phones__key][$phones__value__key] = __phone_normalize(
