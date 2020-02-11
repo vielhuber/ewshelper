@@ -67,7 +67,7 @@ if ($switch == 6) {
 }
 
 if ($switch == 7) {
-    $ewshelper->syncContacts('test', [
+    $response = $ewshelper->syncContacts('test', [
         [
             'first_name' => 'Max',
             'last_name' => 'Mustermann',
@@ -87,4 +87,5 @@ if ($switch == 7) {
             'categories' => ['test']
         ]
     ]);
+    var_dump($response);
 }

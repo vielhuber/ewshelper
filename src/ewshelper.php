@@ -614,5 +614,14 @@ class ewshelper
         foreach ($contacts_to_create as $contacts_to_create__value) {
             $this->addContact($contacts_to_create__value);
         }
+
+        return [
+            'success' => true,
+            'message' => null,
+            'data' => [
+                'deleted' => count($contacts_to_remove),
+                'created' => count($contacts_to_create)
+            ]
+        ];
     }
 }
