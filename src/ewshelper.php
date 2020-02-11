@@ -159,6 +159,9 @@ class ewshelper
             $phones = ['private' => [], 'business' => []];
             if (!empty(@$contacts__value->PhoneNumbers->Entry)) {
                 foreach ($contacts__value->PhoneNumbers->Entry as $phones__value) {
+                    if ($phones__value->_ == '') {
+                        continue;
+                    }
                     if (
                         $phones__value->Key === PhoneNumberKeyType::HOME_PHONE ||
                         $phones__value->Key === PhoneNumberKeyType::HOME_PHONE_2 ||
