@@ -73,6 +73,34 @@ $ewshelper->updateContact('**id**', [
 $ewshelper->removeContact('**id**');
 ```
 
+#### sync contacts
+
+the following helper function gets all exchange contacts in category `test`,\
+deletes those that are not present in the provided array and creates those that don't exist yet in exchange.
+
+```php
+$ewshelper->syncContacts('test', [
+    [
+        'first_name' => 'Max',
+        'last_name' => 'Mustermann',
+        'company_name' => 'Musterfirma',
+        'emails' => ['max@mustermann.de'],
+        'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
+        'url' => 'https://www.mustermann.de',
+        'categories' => ['test']
+    ],
+    [
+        'first_name' => 'Erika',
+        'last_name' => 'Mustermann',
+        'company_name' => 'Musterfirma',
+        'emails' => ['erika@mustermann.de'],
+        'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
+        'url' => 'https://www.mustermann.de',
+        'categories' => ['test']
+    ]
+]);
+```
+
 ## note on outlook
 
 when deleting phone numbers or making a lot of changes to existing contacts,\

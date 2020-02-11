@@ -65,3 +65,26 @@ if ($switch == 6) {
     );
     var_dump($response);
 }
+
+if ($switch == 7) {
+    $ewshelper->syncContacts('test', [
+        [
+            'first_name' => 'Max',
+            'last_name' => 'Mustermann',
+            'company_name' => 'Musterfirma',
+            'emails' => ['max@mustermann.de'],
+            'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
+            'url' => 'https://www.mustermann.de',
+            'categories' => ['test']
+        ],
+        [
+            'first_name' => 'Erika',
+            'last_name' => 'Mustermann',
+            'company_name' => 'Musterfirma',
+            'emails' => ['erika@mustermann.de'],
+            'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
+            'url' => 'https://www.mustermann.de',
+            'categories' => ['test']
+        ]
+    ]);
+}

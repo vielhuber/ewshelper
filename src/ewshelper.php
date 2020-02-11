@@ -546,4 +546,73 @@ class ewshelper
             'message' => null
         ];
     }
+
+    public function syncContacts($category, $contacts_new)
+    {
+        $this->normalizeData();
+
+        // get all outlook contacts (in special category)
+        $contacts_outlook = $this->getContacts();
+        foreach ($contacts_outlook as $contacts_outlook__key => $contacts_outlook__value) {
+            if (!in_array($category, $contacts_outlook__value['categories'])) {
+                unset($contacts_outlook[$contacts_outlook__key]);
+            }
+        }
+
+        // normalize provided data
+        foreach ($contacts_new as $contacts_new__key => $contacts_new__value) {
+            foreach ($contacts_new__value['phones'] as $phones__key => $phones__value) {
+                foreach ($phones__value as $phones__value__key => $phones__value__value) {
+                    $contacts_new[$contacts_new__key]['phones'][$phones__key][$phones__value__key] = __phone_normalize(
+                        $phones__value__value
+                    );
+                }
+            }
+        }
+
+        // get array of contacts that do not exist in new data but in exchange
+        $contacts_to_remove = [];
+        foreach ($contacts_outlook as $contacts_outlook__value) {
+            $to_remove = true;
+            $id = $contacts_outlook__value['id'];
+            unset($contacts_outlook__value['id']);
+            unset($contacts_outlook__value['obj']);
+            foreach ($contacts_new as $contacts_new__value) {
+                if ($contacts_outlook__value == $contacts_new__value) {
+                    $to_remove = false;
+                    break;
+                }
+            }
+            if ($to_remove === true) {
+                $contacts_to_remove[] = $id;
+            }
+        }
+
+        // get array of contacts that do not exist in exchange but in new data
+        $contacts_to_create = [];
+        foreach ($contacts_new as $contacts_new__value) {
+            $to_create = true;
+            foreach ($contacts_outlook as $contacts_outlook__value) {
+                unset($contacts_outlook__value['id']);
+                unset($contacts_outlook__value['obj']);
+                if ($contacts_outlook__value == $contacts_new__value) {
+                    $to_create = false;
+                    break;
+                }
+            }
+            if ($to_create === true) {
+                $contacts_to_create[] = $contacts_new__value;
+            }
+        }
+
+        // finally remove
+        foreach ($contacts_to_remove as $contacts_to_remove__value) {
+            $this->removeContact($contacts_to_remove__value);
+        }
+
+        // finally create
+        foreach ($contacts_to_create as $contacts_to_create__value) {
+            $this->addContact($contacts_to_create__value);
+        }
+    }
 }
