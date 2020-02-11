@@ -39,6 +39,12 @@ $ewshelper->getContact('**id**');
 $ewshelper->normalizeData();
 ```
 
+#### remove duplicates
+
+```php
+$ewshelper->removeDuplicates();
+```
+
 #### add a new contact
 
 ```php

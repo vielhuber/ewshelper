@@ -107,3 +107,8 @@ if ($switch == 7) {
     ]);
     var_dump($response);
 }
+
+if ($switch == 8) {
+    $response = $ewshelper->removeDuplicates();
+    var_dump($response);
+}

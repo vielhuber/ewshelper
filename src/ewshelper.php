@@ -550,6 +550,7 @@ class ewshelper
     public function syncContacts($category, $contacts_new)
     {
         $this->normalizeData();
+        $this->removeDuplicates();
 
         // get all outlook contacts (in special category)
         $contacts_outlook = $this->getContacts();
@@ -575,7 +576,7 @@ class ewshelper
         foreach ($contacts_outlook as $contacts_outlook__value) {
             $to_remove = true;
             foreach ($contacts_new as $contacts_new__value) {
-                if ($this->syncContactsIsEqual($contacts_outlook__value, $contacts_new__value)) {
+                if ($this->contactsAreEqual($contacts_outlook__value, $contacts_new__value)) {
                     $to_remove = false;
                     break;
                 }
@@ -590,7 +591,7 @@ class ewshelper
         foreach ($contacts_new as $contacts_new__value) {
             $to_create = true;
             foreach ($contacts_outlook as $contacts_outlook__value) {
-                if ($this->syncContactsIsEqual($contacts_outlook__value, $contacts_new__value)) {
+                if ($this->contactsAreEqual($contacts_outlook__value, $contacts_new__value)) {
                     $to_create = false;
                     break;
                 }
@@ -620,7 +621,39 @@ class ewshelper
         ];
     }
 
-    private function syncContactsIsEqual($a, $b)
+    public function removeDuplicates()
+    {
+        $contacts_outlook_1 = $this->getContacts();
+        $contacts_outlook_2 = $contacts_outlook_1;
+
+        $contacts_to_remove = [];
+        foreach ($contacts_outlook_1 as $contacts_outlook_1__key => $contacts_outlook_1__value) {
+            foreach ($contacts_outlook_2 as $contacts_outlook_2__key => $contacts_outlook_2__value) {
+                if ($contacts_outlook_1__key >= $contacts_outlook_2__key) {
+                    continue;
+                }
+                if ($this->contactsAreEqual($contacts_outlook_1__value, $contacts_outlook_2__value)) {
+                    $contacts_to_remove[] = $contacts_outlook_1__value['id'];
+                    break;
+                }
+            }
+        }
+
+        // finally remove
+        foreach ($contacts_to_remove as $contacts_to_remove__value) {
+            $this->removeContact($contacts_to_remove__value);
+        }
+
+        return [
+            'success' => true,
+            'message' => null,
+            'data' => [
+                'deleted' => count($contacts_to_remove)
+            ]
+        ];
+    }
+
+    private function contactsAreEqual($a, $b)
     {
         foreach (['a', 'b'] as $contact) {
             if (@${$contact}['id'] != '') {
