@@ -415,7 +415,7 @@ class ewshelper
 
         $contact->FileAsMapping = FileAsMappingType::FIRST_SPACE_LAST;
 
-        $request->Items->Contact[] = $contact;
+        @$request->Items->Contact[] = $contact;
         $response = $this->client->CreateItem($request);
 
         $id = $response->ResponseMessages->CreateItemResponseMessage[0]->Items->Contact[0]->ItemId->Id;
