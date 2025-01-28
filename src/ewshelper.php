@@ -2,50 +2,51 @@
 namespace vielhuber\ewshelper;
 
 use jamesiarmes\PhpEws\Client;
-use jamesiarmes\PhpEws\Request\FindItemType;
-use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseFolderIdsType;
-use jamesiarmes\PhpEws\Enumeration\DistinguishedFolderIdNameType;
-use jamesiarmes\PhpEws\Enumeration\ResponseClassType;
-use jamesiarmes\PhpEws\Type\ContactsViewType;
-use jamesiarmes\PhpEws\Type\DistinguishedFolderIdType;
-use jamesiarmes\PhpEws\Type\ItemResponseShapeType;
-use jamesiarmes\PhpEws\Enumeration\DefaultShapeNamesType;
-use jamesiarmes\PhpEws\Enumeration\ItemQueryTraversalType;
-use jamesiarmes\PhpEws\Enumeration\IndexBasePointType;
-use jamesiarmes\PhpEws\Type\IndexedPageViewType;
-use jamesiarmes\PhpEws\Request\UpdateItemType;
-use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfItemChangeDescriptionsType;
-use jamesiarmes\PhpEws\Enumeration\ConflictResolutionType;
-use jamesiarmes\PhpEws\Type\ItemChangeType;
-use jamesiarmes\PhpEws\Type\ItemIdType;
-use jamesiarmes\PhpEws\Type\SetItemFieldType;
-use jamesiarmes\PhpEws\Type\ContactItemType;
-use jamesiarmes\PhpEws\Type\PathToIndexedFieldType;
-use jamesiarmes\PhpEws\Type\PathToUnindexedFieldType;
-use jamesiarmes\PhpEws\Enumeration\UnindexedFieldURIType;
-use jamesiarmes\PhpEws\Request\CreateItemType;
-use jamesiarmes\PhpEws\Enumeration\BodyTypeType;
-use jamesiarmes\PhpEws\Enumeration\EmailAddressKeyType;
-use jamesiarmes\PhpEws\Enumeration\FileAsMappingType;
-use jamesiarmes\PhpEws\Enumeration\MapiPropertyTypeType;
-use jamesiarmes\PhpEws\Enumeration\PhoneNumberKeyType;
-use jamesiarmes\PhpEws\Enumeration\PhysicalAddressKeyType;
 use jamesiarmes\PhpEws\Type\BodyType;
-use jamesiarmes\PhpEws\Type\EmailAddressDictionaryEntryType;
-use jamesiarmes\PhpEws\Type\EmailAddressDictionaryType;
-use jamesiarmes\PhpEws\Type\CompleteNameType;
-use jamesiarmes\PhpEws\Type\ExtendedPropertyType;
-use jamesiarmes\PhpEws\Type\PathToExtendedFieldType;
-use jamesiarmes\PhpEws\Type\PhoneNumberDictionaryEntryType;
-use jamesiarmes\PhpEws\Type\PhysicalAddressDictionaryEntryType;
-use jamesiarmes\PhpEws\Type\PhoneNumberDictionaryType;
-use jamesiarmes\PhpEws\Request\DeleteItemType;
-use jamesiarmes\PhpEws\Enumeration\DisposalType;
-use jamesiarmes\PhpEws\Enumeration\DictionaryURIType;
-use jamesiarmes\PhpEws\Type\DeleteItemFieldType;
-use jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
+use jamesiarmes\PhpEws\Type\ItemIdType;
 use jamesiarmes\PhpEws\Request\GetItemType;
+use jamesiarmes\PhpEws\Type\ItemChangeType;
+use jamesiarmes\PhpEws\Request\FindItemType;
+use jamesiarmes\PhpEws\Type\ContactItemType;
+use jamesiarmes\PhpEws\Type\CompleteNameType;
+use jamesiarmes\PhpEws\Type\ContactsViewType;
+use jamesiarmes\PhpEws\Type\SetItemFieldType;
+use jamesiarmes\PhpEws\Request\CreateItemType;
+use jamesiarmes\PhpEws\Request\DeleteItemType;
+use jamesiarmes\PhpEws\Request\UpdateItemType;
+use jamesiarmes\PhpEws\Enumeration\BodyTypeType;
+use jamesiarmes\PhpEws\Enumeration\DisposalType;
+use jamesiarmes\PhpEws\Type\DeleteItemFieldType;
+use jamesiarmes\PhpEws\Type\IndexedPageViewType;
+use jamesiarmes\PhpEws\Type\ExtendedPropertyType;
+use jamesiarmes\PhpEws\Type\ItemResponseShapeType;
+use jamesiarmes\PhpEws\Type\PathToIndexedFieldType;
+use jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
+use jamesiarmes\PhpEws\Type\PathToExtendedFieldType;
+use jamesiarmes\PhpEws\Enumeration\DictionaryURIType;
+use jamesiarmes\PhpEws\Enumeration\FileAsMappingType;
+use jamesiarmes\PhpEws\Enumeration\ResponseClassType;
+use jamesiarmes\PhpEws\Type\PathToUnindexedFieldType;
+use jamesiarmes\PhpEws\Enumeration\IndexBasePointType;
+use jamesiarmes\PhpEws\Enumeration\PhoneNumberKeyType;
+use jamesiarmes\PhpEws\Type\DistinguishedFolderIdType;
+use jamesiarmes\PhpEws\Type\PhoneNumberDictionaryType;
+use jamesiarmes\PhpEws\Enumeration\EmailAddressKeyType;
+use jamesiarmes\PhpEws\Type\EmailAddressDictionaryType;
+use jamesiarmes\PhpEws\Enumeration\MapiPropertyTypeType;
+use jamesiarmes\PhpEws\Enumeration\DefaultShapeNamesType;
+use jamesiarmes\PhpEws\Enumeration\UnindexedFieldURIType;
+use jamesiarmes\PhpEws\Enumeration\ConflictResolutionType;
+use jamesiarmes\PhpEws\Enumeration\ItemQueryTraversalType;
+use jamesiarmes\PhpEws\Enumeration\PhysicalAddressKeyType;
+use jamesiarmes\PhpEws\Type\PhoneNumberDictionaryEntryType;
+use jamesiarmes\PhpEws\Type\EmailAddressDictionaryEntryType;
+use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAllItemsType;
+use jamesiarmes\PhpEws\Type\PhysicalAddressDictionaryEntryType;
 use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
+use jamesiarmes\PhpEws\Enumeration\DistinguishedFolderIdNameType;
+use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseFolderIdsType;
+use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfItemChangeDescriptionsType;
 
 class ewshelper
 {
@@ -54,7 +55,7 @@ class ewshelper
     public function __construct($host, $username, $password)
     {
         $this->client = new Client($host, $username, $password);
-        $this->client->setCurlOptions([CURLOPT_SSL_VERIFYPEER => false]);
+        $this->client->setCurlOptions([CURLOPT_SSL_VERIFYPEER => false, CURLOPT_HTTPAUTH => CURLAUTH_BASIC]);
     }
 
     public function debugRequest()
@@ -73,124 +74,129 @@ class ewshelper
 
     public function getContacts($id = null)
     {
-        $limit = 1000;
-        $request = new FindItemType();
-        $request->ItemShape = new ItemResponseShapeType();
-        $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
-        $request->ParentFolderIds = new NonEmptyArrayOfBaseFolderIdsType();
-        $request->ContactsView = new ContactsViewType();
-        $request->IndexedPageItemView = new IndexedPageViewType();
-        $request->IndexedPageItemView->BasePoint = IndexBasePointType::BEGINNING;
-        $request->IndexedPageItemView->Offset = 0;
-        $request->IndexedPageItemView->MaxEntriesReturned = $limit;
-        $folder_id = new DistinguishedFolderIdType();
-        $folder_id->Id = DistinguishedFolderIdNameType::CONTACTS;
-        $request->ParentFolderIds->DistinguishedFolderId[] = $folder_id;
-        $request->Traversal = ItemQueryTraversalType::SHALLOW;
-        $response = $this->client->FindItem($request);
-
         $contacts = [];
-        foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message) {
-            if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
-                continue;
-            }
-            $contacts = array_merge($contacts, $response_message->RootFolder->Items->Contact);
-            $last_page = $response_message->RootFolder->IncludesLastItemInRange;
-            $page_number = 1;
-            while (!$last_page) {
-                $request->IndexedPageItemView->Offset = $limit * $page_number;
-                $response = $this->client->FindItem($request);
-                foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message_this) {
-                    $contacts = array_merge($contacts, $response_message_this->RootFolder->Items->Contact);
-                }
-                $last_page = $response_message_this->RootFolder->IncludesLastItemInRange;
-                $page_number++;
-            }
-        }
+        try {
+            $limit = 1000;
+            $request = new FindItemType();
+            $request->ItemShape = new ItemResponseShapeType();
+            $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
+            $request->ParentFolderIds = new NonEmptyArrayOfBaseFolderIdsType();
+            $request->ContactsView = new ContactsViewType();
+            $request->IndexedPageItemView = new IndexedPageViewType();
+            $request->IndexedPageItemView->BasePoint = IndexBasePointType::BEGINNING;
+            $request->IndexedPageItemView->Offset = 0;
+            $request->IndexedPageItemView->MaxEntriesReturned = $limit;
+            $folder_id = new DistinguishedFolderIdType();
+            $folder_id->Id = DistinguishedFolderIdNameType::CONTACTS;
+            $request->ParentFolderIds->DistinguishedFolderId[] = $folder_id;
+            $request->Traversal = ItemQueryTraversalType::SHALLOW;
+            $response = $this->client->FindItem($request);
 
-        if ($id !== null) {
-            foreach ($contacts as $contacts__key => $contacts__value) {
-                if ($contacts__value->ItemId->Id !== $id) {
-                    unset($contacts[$contacts__key]);
+            foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message) {
+                if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+                    continue;
+                }
+                $contacts = array_merge($contacts, $response_message->RootFolder->Items->Contact);
+                $last_page = $response_message->RootFolder->IncludesLastItemInRange;
+                $page_number = 1;
+                while (!$last_page) {
+                    $request->IndexedPageItemView->Offset = $limit * $page_number;
+                    $response = $this->client->FindItem($request);
+                    foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message_this) {
+                        $contacts = array_merge($contacts, $response_message_this->RootFolder->Items->Contact);
+                    }
+                    $last_page = $response_message_this->RootFolder->IncludesLastItemInRange;
+                    $page_number++;
                 }
             }
-            $contacts = array_values($contacts);
-        }
 
-        foreach ($contacts as $contacts__key => $contacts__value) {
-            $emails = [];
-            if (!empty(@$contacts__value->EmailAddresses->Entry)) {
-                foreach ($contacts__value->EmailAddresses->Entry as $emails__value) {
-                    $emails[] = $emails__value->_;
-                }
-                // for any internal user exchange responds with a link like "/o=exchange/ou=Exchange Administrative Group/..."
-                // see: https://social.technet.microsoft.com/Forums/exchange/de-DE/e78bd9ad-4ec3-4f2d-9939-747cafe77faa/how-to-resolve-the-email-address-in-this-form-oabcdouexchange-administrative-group?forum=exchangesvrdevelopment
-                // we fix this weird behaviour by calling GetItem directly
-                $fix_emails = false;
-                foreach ($emails as $emails__value) {
-                    if (strpos($emails__value, 'o=exchange/ou=Exchange Administrative Group') !== false) {
-                        $fix_emails = true;
+            if ($id !== null) {
+                foreach ($contacts as $contacts__key => $contacts__value) {
+                    if ($contacts__value->ItemId->Id !== $id) {
+                        unset($contacts[$contacts__key]);
                     }
                 }
-                if ($fix_emails === true) {
-                    $emails = [];
-                    $request = new GetItemType();
-                    $request->ItemShape = new ItemResponseShapeType();
-                    $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
-                    $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
-                    $item = new ItemIdType();
-                    $item->Id = $contacts__value->ItemId->Id;
-                    $request->ItemIds->ItemId[] = $item;
-                    $response = $this->client->GetItem($request);
-                    foreach ($response->ResponseMessages->GetItemResponseMessage as $response_message) {
-                        if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
-                            continue;
+                $contacts = array_values($contacts);
+            }
+
+            foreach ($contacts as $contacts__key => $contacts__value) {
+                $emails = [];
+                if (!empty(@$contacts__value->EmailAddresses->Entry)) {
+                    foreach ($contacts__value->EmailAddresses->Entry as $emails__value) {
+                        $emails[] = $emails__value->_;
+                    }
+                    // for any internal user exchange responds with a link like "/o=exchange/ou=Exchange Administrative Group/..."
+                    // see: https://social.technet.microsoft.com/Forums/exchange/de-DE/e78bd9ad-4ec3-4f2d-9939-747cafe77faa/how-to-resolve-the-email-address-in-this-form-oabcdouexchange-administrative-group?forum=exchangesvrdevelopment
+                    // we fix this weird behaviour by calling GetItem directly
+                    $fix_emails = false;
+                    foreach ($emails as $emails__value) {
+                        if (strpos($emails__value, 'o=exchange/ou=Exchange Administrative Group') !== false) {
+                            $fix_emails = true;
                         }
-                        foreach ($response_message->Items->Contact as $item) {
-                            if (!empty(@$item->EmailAddresses->Entry)) {
-                                foreach ($item->EmailAddresses->Entry as $emails__value) {
-                                    $emails[] = $emails__value->_;
+                    }
+                    if ($fix_emails === true) {
+                        $emails = [];
+                        $request = new GetItemType();
+                        $request->ItemShape = new ItemResponseShapeType();
+                        $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
+                        $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
+                        $item = new ItemIdType();
+                        $item->Id = $contacts__value->ItemId->Id;
+                        $request->ItemIds->ItemId[] = $item;
+                        $response = $this->client->GetItem($request);
+                        foreach ($response->ResponseMessages->GetItemResponseMessage as $response_message) {
+                            if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+                                continue;
+                            }
+                            foreach ($response_message->Items->Contact as $item) {
+                                if (!empty(@$item->EmailAddresses->Entry)) {
+                                    foreach ($item->EmailAddresses->Entry as $emails__value) {
+                                        $emails[] = $emails__value->_;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            $phones = ['private' => [], 'business' => []];
-            if (!empty(@$contacts__value->PhoneNumbers->Entry)) {
-                foreach ($contacts__value->PhoneNumbers->Entry as $phones__value) {
-                    if ($phones__value->_ == '') {
-                        continue;
-                    }
-                    if (
-                        $phones__value->Key === PhoneNumberKeyType::HOME_PHONE ||
-                        $phones__value->Key === PhoneNumberKeyType::HOME_PHONE_2 ||
-                        $phones__value->Key === PhoneNumberKeyType::OTHER_PHONE ||
-                        $phones__value->Key === PhoneNumberKeyType::MOBILE_PHONE
-                    ) {
-                        $phones['private'][] = $phones__value->_;
-                    }
-                    if (
-                        $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE ||
-                        $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE_2 ||
-                        $phones__value->Key === PhoneNumberKeyType::COMPANY_MAIN_PHONE ||
-                        $phones__value->Key === PhoneNumberKeyType::PAGER
-                    ) {
-                        $phones['business'][] = $phones__value->_;
+                $phones = ['private' => [], 'business' => []];
+                if (!empty(@$contacts__value->PhoneNumbers->Entry)) {
+                    foreach ($contacts__value->PhoneNumbers->Entry as $phones__value) {
+                        if ($phones__value->_ == '') {
+                            continue;
+                        }
+                        if (
+                            $phones__value->Key === PhoneNumberKeyType::HOME_PHONE ||
+                            $phones__value->Key === PhoneNumberKeyType::HOME_PHONE_2 ||
+                            $phones__value->Key === PhoneNumberKeyType::OTHER_PHONE ||
+                            $phones__value->Key === PhoneNumberKeyType::MOBILE_PHONE
+                        ) {
+                            $phones['private'][] = $phones__value->_;
+                        }
+                        if (
+                            $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE ||
+                            $phones__value->Key === PhoneNumberKeyType::BUSINESS_PHONE_2 ||
+                            $phones__value->Key === PhoneNumberKeyType::COMPANY_MAIN_PHONE ||
+                            $phones__value->Key === PhoneNumberKeyType::PAGER
+                        ) {
+                            $phones['business'][] = $phones__value->_;
+                        }
                     }
                 }
+                $contacts[$contacts__key] = [
+                    'id' => $contacts__value->ItemId->Id,
+                    'first_name' => @$contacts__value->GivenName != '' ? $contacts__value->GivenName : '',
+                    'last_name' => @$contacts__value->Surname != '' ? $contacts__value->Surname : '',
+                    'company_name' => $contacts__value->CompanyName,
+                    'emails' => $emails,
+                    'phones' => $phones,
+                    'url' => $contacts__value->BusinessHomePage,
+                    'categories' =>
+                        @$contacts__value->Categories->String != '' ? $contacts__value->Categories->String : [],
+                    'obj' => $contacts__value
+                ];
             }
-            $contacts[$contacts__key] = [
-                'id' => $contacts__value->ItemId->Id,
-                'first_name' => @$contacts__value->GivenName != '' ? $contacts__value->GivenName : '',
-                'last_name' => @$contacts__value->Surname != '' ? $contacts__value->Surname : '',
-                'company_name' => $contacts__value->CompanyName,
-                'emails' => $emails,
-                'phones' => $phones,
-                'url' => $contacts__value->BusinessHomePage,
-                'categories' => @$contacts__value->Categories->String != '' ? $contacts__value->Categories->String : [],
-                'obj' => $contacts__value
-            ];
+        } catch (\Throwable $e) {
+            echo 'Catched error: ' . $e->getMessage() . '<br/>';
         }
 
         return $contacts;
@@ -415,6 +421,7 @@ class ewshelper
 
         $contact->FileAsMapping = FileAsMappingType::FIRST_SPACE_LAST;
 
+        $request->Items = new NonEmptyArrayOfAllItemsType();
         @$request->Items->Contact[] = $contact;
         $response = $this->client->CreateItem($request);
 
