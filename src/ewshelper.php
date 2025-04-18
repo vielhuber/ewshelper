@@ -224,7 +224,7 @@ class ewshelper
             if (empty($fullname) && @$contacts__value['obj']->CompanyName != '') {
                 $fullname[] = trim($contacts__value['obj']->CompanyName);
             }
-            $fullname = implode(' ', $fullname);
+            $fullname = implode(', ', $fullname);
             $fullname = trim($fullname);
 
             $change = new ItemChangeType();
@@ -309,7 +309,7 @@ class ewshelper
                     $field->Contact->PhoneNumbers = new PhoneNumberDictionaryType();
 
                     $entry = new PhoneNumberDictionaryEntryType();
-                    $entry->_ = __phone_normalize($phones__value->_);
+                    $entry->_ = __phone_normalize($phones__value->_, '');
                     $entry->Key = $phones__value->Key;
                     $field->Contact->PhoneNumbers->Entry[] = $entry;
                     $change->Updates->SetItemField[] = $field;
@@ -618,7 +618,8 @@ class ewshelper
             foreach ($contacts_new__value['phones'] as $phones__key => $phones__value) {
                 foreach ($phones__value as $phones__value__key => $phones__value__value) {
                     $contacts_new[$contacts_new__key]['phones'][$phones__key][$phones__value__key] = __phone_normalize(
-                        $phones__value__value
+                        $phones__value__value,
+                        ''
                     );
                 }
             }

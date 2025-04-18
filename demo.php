@@ -4,9 +4,11 @@ use vielhuber\ewshelper\ewshelper;
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-$ewshelper = new ewshelper(getenv('EWS_HOST'), getenv('EWS_USERNAME'), getenv('EWS_PASSWORD'));
+$ewshelper = new ewshelper(@$_SERVER['EWS_HOST'], @$_SERVER['EWS_USERNAME'], @$_SERVER['EWS_PASSWORD']);
 
 $switch = @$_GET['switch'];
+
+echo '<pre>';
 
 if ($switch == 1) {
     $contacts = $ewshelper->getContacts();
