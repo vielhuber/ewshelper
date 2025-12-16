@@ -55,7 +55,12 @@ class ewshelper
     public function __construct($host, $username, $password)
     {
         $this->client = new Client($host, $username, $password);
-        $this->client->setCurlOptions([CURLOPT_SSL_VERIFYPEER => false, CURLOPT_HTTPAUTH => CURLAUTH_BASIC]);
+        $this->client->setCurlOptions([
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+            CURLOPT_CONNECTTIMEOUT => 60,
+            CURLOPT_TIMEOUT => 120
+        ]);
     }
 
     public function debugRequest()
@@ -204,14 +209,15 @@ class ewshelper
 
     public function normalizeData($id = null)
     {
-        $request = new UpdateItemType();
-        $request->ConflictResolution = ConflictResolutionType::ALWAYS_OVERWRITE;
+        try {
+            $request = new UpdateItemType();
+            $request->ConflictResolution = ConflictResolutionType::ALWAYS_OVERWRITE;
 
-        if ($id === null) {
-            $contacts = $this->getContacts();
-        } else {
-            $contacts = [$this->getContact($id)];
-        }
+            if ($id === null) {
+                $contacts = $this->getContacts();
+            } else {
+                $contacts = [$this->getContact($id)];
+            }
 
         foreach ($contacts as $contacts__value) {
             $fullname = [];
@@ -319,148 +325,173 @@ class ewshelper
             $request->ItemChanges[] = $change;
         }
 
-        $response = $this->client->UpdateItem($request);
+            $response = $this->client->UpdateItem($request);
 
-        $response_messages = $response->ResponseMessages->UpdateItemResponseMessage;
-        foreach ($response_messages as $response_messages__value) {
-            if ($response_messages__value->ResponseClass !== ResponseClassType::SUCCESS) {
-                return [
-                    'success' => false,
-                    'message' => $response_messages__value->MessageText
-                ];
+            $response_messages = $response->ResponseMessages->UpdateItemResponseMessage;
+            foreach ($response_messages as $response_messages__value) {
+                if ($response_messages__value->ResponseClass !== ResponseClassType::SUCCESS) {
+                    return [
+                        'success' => false,
+                        'message' => $response_messages__value->MessageText
+                    ];
+                }
             }
+            return [
+                'success' => true,
+                'message' => null
+            ];
+        } catch (\Throwable $e) {
+            error_log('EWS normalizeData error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Connection error: ' . $e->getMessage()
+            ];
         }
-        return [
-            'success' => true,
-            'message' => null
-        ];
     }
 
     public function addContact($data)
     {
-        $request = new CreateItemType();
-        $contact = new ContactItemType();
+        try {
+            $request = new CreateItemType();
+            $contact = new ContactItemType();
 
-        if (@$data['first_name'] != '') {
-            $contact->GivenName = $data['first_name'];
-        }
-        if (@$data['last_name'] != '') {
-            $contact->Surname = $data['last_name'];
-        }
-        if (@$data['company_name'] != '') {
-            $contact->CompanyName = $data['company_name'];
-        }
-        if (@$data['url'] != '') {
-            $contact->BusinessHomePage = $data['url'];
-        }
-
-        if (!empty(@$data['categories'])) {
-            $contact->Categories = new ArrayOfStringsType();
-            foreach ($data['categories'] as $categories__value) {
-                $contact->Categories->String[] = $categories__value;
+            if (@$data['first_name'] != '') {
+                $contact->GivenName = $data['first_name'];
             }
-        }
+            if (@$data['last_name'] != '') {
+                $contact->Surname = $data['last_name'];
+            }
+            if (@$data['company_name'] != '') {
+                $contact->CompanyName = $data['company_name'];
+            }
+            if (@$data['url'] != '') {
+                $contact->BusinessHomePage = $data['url'];
+            }
 
-        if (!empty(@$data['emails'])) {
-            $contact->EmailAddresses = new EmailAddressDictionaryType();
-            foreach ($data['emails'] as $emails__key => $emails__value) {
-                $email = new EmailAddressDictionaryEntryType();
-                if ($emails__key === 0) {
-                    $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_1;
-                } elseif ($emails__key === 1) {
-                    $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_2;
-                } elseif ($emails__key === 2) {
-                    $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_3;
-                } else {
-                    continue;
+            if (!empty(@$data['categories'])) {
+                $contact->Categories = new ArrayOfStringsType();
+                foreach ($data['categories'] as $categories__value) {
+                    $contact->Categories->String[] = $categories__value;
                 }
-                $email->_ = $emails__value;
-                $contact->EmailAddresses->Entry[] = $email;
             }
-        }
 
-        if (!empty(@$data['phones'])) {
-            $contact->PhoneNumbers = new PhoneNumberDictionaryType();
-            foreach ($data['phones'] as $phones__key => $phones__value) {
-                foreach ($phones__value as $phones__value__key => $phones__value__value) {
-                    $phone = new PhoneNumberDictionaryEntryType();
-
-                    if ($phones__key === 'private') {
-                        if ($phones__value__key === 0) {
-                            $phone->Key = PhoneNumberKeyType::HOME_PHONE;
-                        } elseif ($phones__value__key === 1) {
-                            $phone->Key = PhoneNumberKeyType::HOME_PHONE_2;
-                        } elseif ($phones__value__key === 2) {
-                            $phone->Key = PhoneNumberKeyType::OTHER_PHONE;
-                        } elseif ($phones__value__key === 3) {
-                            $phone->Key = PhoneNumberKeyType::MOBILE_PHONE;
-                        } else {
-                            continue;
-                        }
-                    } elseif ($phones__key === 'business') {
-                        if ($phones__value__key === 0) {
-                            $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE;
-                        } elseif ($phones__value__key === 1) {
-                            $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE_2;
-                        } elseif ($phones__value__key === 2) {
-                            $phone->Key = PhoneNumberKeyType::COMPANY_MAIN_PHONE;
-                        } elseif ($phones__value__key === 3) {
-                            $phone->Key = PhoneNumberKeyType::PAGER;
-                        } else {
-                            continue;
-                        }
+            if (!empty(@$data['emails'])) {
+                $contact->EmailAddresses = new EmailAddressDictionaryType();
+                foreach ($data['emails'] as $emails__key => $emails__value) {
+                    $email = new EmailAddressDictionaryEntryType();
+                    if ($emails__key === 0) {
+                        $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_1;
+                    } elseif ($emails__key === 1) {
+                        $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_2;
+                    } elseif ($emails__key === 2) {
+                        $email->Key = EmailAddressKeyType::EMAIL_ADDRESS_3;
                     } else {
                         continue;
                     }
-
-                    $phone->_ = $phones__value__value;
-                    $contact->PhoneNumbers->Entry[] = $phone;
+                    $email->_ = $emails__value;
+                    $contact->EmailAddresses->Entry[] = $email;
                 }
             }
+
+            if (!empty(@$data['phones'])) {
+                $contact->PhoneNumbers = new PhoneNumberDictionaryType();
+                foreach ($data['phones'] as $phones__key => $phones__value) {
+                    foreach ($phones__value as $phones__value__key => $phones__value__value) {
+                        $phone = new PhoneNumberDictionaryEntryType();
+
+                        if ($phones__key === 'private') {
+                            if ($phones__value__key === 0) {
+                                $phone->Key = PhoneNumberKeyType::HOME_PHONE;
+                            } elseif ($phones__value__key === 1) {
+                                $phone->Key = PhoneNumberKeyType::HOME_PHONE_2;
+                            } elseif ($phones__value__key === 2) {
+                                $phone->Key = PhoneNumberKeyType::OTHER_PHONE;
+                            } elseif ($phones__value__key === 3) {
+                                $phone->Key = PhoneNumberKeyType::MOBILE_PHONE;
+                            } else {
+                                continue;
+                            }
+                        } elseif ($phones__key === 'business') {
+                            if ($phones__value__key === 0) {
+                                $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE;
+                            } elseif ($phones__value__key === 1) {
+                                $phone->Key = PhoneNumberKeyType::BUSINESS_PHONE_2;
+                            } elseif ($phones__value__key === 2) {
+                                $phone->Key = PhoneNumberKeyType::COMPANY_MAIN_PHONE;
+                            } elseif ($phones__value__key === 3) {
+                                $phone->Key = PhoneNumberKeyType::PAGER;
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
+
+                        $phone->_ = $phones__value__value;
+                        $contact->PhoneNumbers->Entry[] = $phone;
+                    }
+                }
+            }
+
+            $contact->FileAsMapping = FileAsMappingType::FIRST_SPACE_LAST;
+
+            $request->Items = new NonEmptyArrayOfAllItemsType();
+            @$request->Items->Contact[] = $contact;
+            $response = $this->client->CreateItem($request);
+
+            $id = $response->ResponseMessages->CreateItemResponseMessage[0]->Items->Contact[0]->ItemId->Id;
+            $this->normalizeData($id);
+
+            return [
+                'success' =>
+                    $response->ResponseMessages->CreateItemResponseMessage[0]->ResponseClass === ResponseClassType::SUCCESS,
+                'message' => @$response->ResponseMessages->CreateItemResponseMessage[0]->MessageText,
+                'data' => ['id' => $id]
+            ];
+        } catch (\Throwable $e) {
+            error_log('EWS addContact error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Connection error: ' . $e->getMessage(),
+                'data' => null
+            ];
         }
-
-        $contact->FileAsMapping = FileAsMappingType::FIRST_SPACE_LAST;
-
-        $request->Items = new NonEmptyArrayOfAllItemsType();
-        @$request->Items->Contact[] = $contact;
-        $response = $this->client->CreateItem($request);
-
-        $id = $response->ResponseMessages->CreateItemResponseMessage[0]->Items->Contact[0]->ItemId->Id;
-        $this->normalizeData($id);
-
-        return [
-            'success' =>
-                $response->ResponseMessages->CreateItemResponseMessage[0]->ResponseClass === ResponseClassType::SUCCESS,
-            'message' => @$response->ResponseMessages->CreateItemResponseMessage[0]->MessageText,
-            'data' => ['id' => $id]
-        ];
     }
 
     public function removeContact($id)
     {
-        $request = new DeleteItemType();
-        $request->DeleteType = DisposalType::HARD_DELETE;
-        $request->ItemIds = (object) [];
-        $request->ItemIds->ItemId = new ItemIdType();
-        $request->ItemIds->ItemId->Id = $id;
-        $response = $this->client->DeleteItem($request);
+        try {
+            $request = new DeleteItemType();
+            $request->DeleteType = DisposalType::HARD_DELETE;
+            $request->ItemIds = (object) [];
+            $request->ItemIds->ItemId = new ItemIdType();
+            $request->ItemIds->ItemId->Id = $id;
+            $response = $this->client->DeleteItem($request);
 
-        return [
-            'success' =>
-                $response->ResponseMessages->DeleteItemResponseMessage[0]->ResponseClass === ResponseClassType::SUCCESS,
-            'message' => @$response->ResponseMessages->DeleteItemResponseMessage[0]->MessageText
-        ];
+            return [
+                'success' =>
+                    $response->ResponseMessages->DeleteItemResponseMessage[0]->ResponseClass === ResponseClassType::SUCCESS,
+                'message' => @$response->ResponseMessages->DeleteItemResponseMessage[0]->MessageText
+            ];
+        } catch (\Throwable $e) {
+            error_log('EWS removeContact error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Connection error: ' . $e->getMessage()
+            ];
+        }
     }
 
     public function updateContact($id, $data)
     {
-        $request = new UpdateItemType();
-        $request->ConflictResolution = ConflictResolutionType::ALWAYS_OVERWRITE;
+        try {
+            $request = new UpdateItemType();
+            $request->ConflictResolution = ConflictResolutionType::ALWAYS_OVERWRITE;
 
-        $change = new ItemChangeType();
-        $change->ItemId = new ItemIdType();
-        $change->ItemId->Id = $id;
-        $change->Updates = new NonEmptyArrayOfItemChangeDescriptionsType();
+            $change = new ItemChangeType();
+            $change->ItemId = new ItemIdType();
+            $change->ItemId->Id = $id;
+            $change->Updates = new NonEmptyArrayOfItemChangeDescriptionsType();
 
         if (@$data['first_name'] != '') {
             $field = new SetItemFieldType();
@@ -576,28 +607,36 @@ class ewshelper
 
         $this->normalizeData($id);
 
-        $response_messages = $response->ResponseMessages->UpdateItemResponseMessage;
-        foreach ($response_messages as $response_messages__value) {
-            if ($response_messages__value->ResponseClass !== ResponseClassType::SUCCESS) {
-                return [
-                    'success' => false,
-                    'message' => $response_messages__value->MessageText
-                ];
+            $response_messages = $response->ResponseMessages->UpdateItemResponseMessage;
+            foreach ($response_messages as $response_messages__value) {
+                if ($response_messages__value->ResponseClass !== ResponseClassType::SUCCESS) {
+                    return [
+                        'success' => false,
+                        'message' => $response_messages__value->MessageText
+                    ];
+                }
             }
+            return [
+                'success' => true,
+                'message' => null
+            ];
+        } catch (\Throwable $e) {
+            error_log('EWS updateContact error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Connection error: ' . $e->getMessage()
+            ];
         }
-        return [
-            'success' => true,
-            'message' => null
-        ];
     }
 
     public function syncContacts($category, $contacts_new)
     {
-        $this->normalizeData();
-        $this->removeDuplicates();
+        try {
+            $this->normalizeData();
+            $this->removeDuplicates();
 
-        // get all outlook contacts (in special category)
-        $contacts_outlook = $this->getContacts();
+            // get all outlook contacts (in special category)
+            $contacts_outlook = $this->getContacts();
         foreach ($contacts_outlook as $contacts_outlook__key => $contacts_outlook__value) {
             if (!in_array($category, $contacts_outlook__value['categories'])) {
                 unset($contacts_outlook[$contacts_outlook__key]);
@@ -660,25 +699,34 @@ class ewshelper
             $this->removeContact($contacts_to_remove__value);
         }
 
-        // finally create
-        foreach ($contacts_to_create as $contacts_to_create__value) {
-            $this->addContact($contacts_to_create__value);
-        }
+            // finally create
+            foreach ($contacts_to_create as $contacts_to_create__value) {
+                $this->addContact($contacts_to_create__value);
+            }
 
-        return [
-            'success' => true,
-            'message' => null,
-            'data' => [
-                'deleted' => count($contacts_to_remove),
-                'created' => count($contacts_to_create)
-            ]
-        ];
+            return [
+                'success' => true,
+                'message' => null,
+                'data' => [
+                    'deleted' => count($contacts_to_remove),
+                    'created' => count($contacts_to_create)
+                ]
+            ];
+        } catch (\Throwable $e) {
+            error_log('EWS syncContacts error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Connection error: ' . $e->getMessage(),
+                'data' => null
+            ];
+        }
     }
 
     public function removeDuplicates()
     {
-        $contacts_outlook_1 = $this->getContacts();
-        $contacts_outlook_2 = $contacts_outlook_1;
+        try {
+            $contacts_outlook_1 = $this->getContacts();
+            $contacts_outlook_2 = $contacts_outlook_1;
 
         $contacts_to_remove = [];
         foreach ($contacts_outlook_1 as $contacts_outlook_1__key => $contacts_outlook_1__value) {
@@ -693,18 +741,26 @@ class ewshelper
             }
         }
 
-        // finally remove
-        foreach ($contacts_to_remove as $contacts_to_remove__value) {
-            $this->removeContact($contacts_to_remove__value);
-        }
+            // finally remove
+            foreach ($contacts_to_remove as $contacts_to_remove__value) {
+                $this->removeContact($contacts_to_remove__value);
+            }
 
-        return [
-            'success' => true,
-            'message' => null,
-            'data' => [
-                'deleted' => count($contacts_to_remove)
-            ]
-        ];
+            return [
+                'success' => true,
+                'message' => null,
+                'data' => [
+                    'deleted' => count($contacts_to_remove)
+                ]
+            ];
+        } catch (\Throwable $e) {
+            error_log('EWS removeDuplicates error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Connection error: ' . $e->getMessage(),
+                'data' => null
+            ];
+        }
     }
 
     private function contactsAreEqual($a, $b)
