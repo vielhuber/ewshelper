@@ -1,3 +1,10 @@
+[![GitHub Tag](https://img.shields.io/github/v/tag/vielhuber/ewshelper)](https://github.com/vielhuber/ewshelper/tags)
+[![Code Style](https://img.shields.io/badge/code_style-psr--12-ff69b4.svg)](https://www.php-fig.org/psr/psr-12/)
+[![License](https://img.shields.io/github/license/vielhuber/ewshelper)](https://github.com/vielhuber/ewshelper/blob/main/LICENSE.md)
+[![Last Commit](https://img.shields.io/github/last-commit/vielhuber/ewshelper)](https://github.com/vielhuber/ewshelper/commits)
+[![PHP Version Support](https://img.shields.io/packagist/php-v/vielhuber/ewshelper)](https://packagist.org/packages/vielhuber/ewshelper)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/vielhuber/ewshelper)](https://packagist.org/packages/vielhuber/ewshelper)
+
 # 📇 ewshelper 📇
 
 ewshelper is a little wrapper around [php-ews](https://github.com/jamesiarmes/php-ews) and helps you manage your exchange contacts via php.\
