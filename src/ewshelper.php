@@ -2,27 +2,22 @@
 namespace vielhuber\ewshelper;
 
 use jamesiarmes\PhpEws\Client;
-use jamesiarmes\PhpEws\Type\BodyType;
 use jamesiarmes\PhpEws\Type\ItemIdType;
 use jamesiarmes\PhpEws\Request\GetItemType;
 use jamesiarmes\PhpEws\Type\ItemChangeType;
 use jamesiarmes\PhpEws\Request\FindItemType;
 use jamesiarmes\PhpEws\Type\ContactItemType;
-use jamesiarmes\PhpEws\Type\CompleteNameType;
 use jamesiarmes\PhpEws\Type\ContactsViewType;
 use jamesiarmes\PhpEws\Type\SetItemFieldType;
 use jamesiarmes\PhpEws\Request\CreateItemType;
 use jamesiarmes\PhpEws\Request\DeleteItemType;
 use jamesiarmes\PhpEws\Request\UpdateItemType;
-use jamesiarmes\PhpEws\Enumeration\BodyTypeType;
 use jamesiarmes\PhpEws\Enumeration\DisposalType;
 use jamesiarmes\PhpEws\Type\DeleteItemFieldType;
 use jamesiarmes\PhpEws\Type\IndexedPageViewType;
-use jamesiarmes\PhpEws\Type\ExtendedPropertyType;
 use jamesiarmes\PhpEws\Type\ItemResponseShapeType;
 use jamesiarmes\PhpEws\Type\PathToIndexedFieldType;
 use jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
-use jamesiarmes\PhpEws\Type\PathToExtendedFieldType;
 use jamesiarmes\PhpEws\Enumeration\DictionaryURIType;
 use jamesiarmes\PhpEws\Enumeration\FileAsMappingType;
 use jamesiarmes\PhpEws\Enumeration\ResponseClassType;
@@ -33,16 +28,13 @@ use jamesiarmes\PhpEws\Type\DistinguishedFolderIdType;
 use jamesiarmes\PhpEws\Type\PhoneNumberDictionaryType;
 use jamesiarmes\PhpEws\Enumeration\EmailAddressKeyType;
 use jamesiarmes\PhpEws\Type\EmailAddressDictionaryType;
-use jamesiarmes\PhpEws\Enumeration\MapiPropertyTypeType;
 use jamesiarmes\PhpEws\Enumeration\DefaultShapeNamesType;
 use jamesiarmes\PhpEws\Enumeration\UnindexedFieldURIType;
 use jamesiarmes\PhpEws\Enumeration\ConflictResolutionType;
 use jamesiarmes\PhpEws\Enumeration\ItemQueryTraversalType;
-use jamesiarmes\PhpEws\Enumeration\PhysicalAddressKeyType;
 use jamesiarmes\PhpEws\Type\PhoneNumberDictionaryEntryType;
 use jamesiarmes\PhpEws\Type\EmailAddressDictionaryEntryType;
 use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAllItemsType;
-use jamesiarmes\PhpEws\Type\PhysicalAddressDictionaryEntryType;
 use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
 use jamesiarmes\PhpEws\Enumeration\DistinguishedFolderIdNameType;
 use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseFolderIdsType;
@@ -50,9 +42,9 @@ use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfItemChangeDescriptionsType;
 
 class ewshelper
 {
-    private $client = null;
+    private ?Client $client = null;
 
-    public function __construct($host, $username, $password)
+    public function __construct(string $host, string $username, string $password)
     {
         $this->client = new Client($host, $username, $password);
         $this->client->setCurlOptions([
@@ -63,12 +55,12 @@ class ewshelper
         ]);
     }
 
-    public function debugRequest()
+    public function debugRequest(): ?string
     {
-        return @$this->client->getClient()->__last_request;
+        return $this->client->getClient()->__getLastRequest();
     }
 
-    public function getContact($id)
+    public function getContact(string $id): array
     {
         $contacts = $this->getContacts($id);
         if (!empty($contacts)) {
@@ -77,7 +69,7 @@ class ewshelper
         return [];
     }
 
-    public function getContacts($id = null)
+    public function getContacts(?string $id = null): array
     {
         $contacts = [];
         try {
@@ -109,8 +101,8 @@ class ewshelper
                     $response = $this->client->FindItem($request);
                     foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message_this) {
                         $contacts = array_merge($contacts, $response_message_this->RootFolder->Items->Contact);
+                        $last_page = $response_message_this->RootFolder->IncludesLastItemInRange;
                     }
-                    $last_page = $response_message_this->RootFolder->IncludesLastItemInRange;
                     $page_number++;
                 }
             }
@@ -126,7 +118,7 @@ class ewshelper
 
             foreach ($contacts as $contacts__key => $contacts__value) {
                 $emails = [];
-                if (!empty(@$contacts__value->EmailAddresses->Entry)) {
+                if (!empty($contacts__value?->EmailAddresses?->Entry)) {
                     foreach ($contacts__value->EmailAddresses->Entry as $emails__value) {
                         $emails[] = $emails__value->_;
                     }
@@ -154,7 +146,7 @@ class ewshelper
                                 continue;
                             }
                             foreach ($response_message->Items->Contact as $item) {
-                                if (!empty(@$item->EmailAddresses->Entry)) {
+                                if (!empty($item?->EmailAddresses?->Entry)) {
                                     foreach ($item->EmailAddresses->Entry as $emails__value) {
                                         $emails[] = $emails__value->_;
                                     }
@@ -164,7 +156,7 @@ class ewshelper
                     }
                 }
                 $phones = ['private' => [], 'business' => []];
-                if (!empty(@$contacts__value->PhoneNumbers->Entry)) {
+                if (!empty($contacts__value?->PhoneNumbers?->Entry)) {
                     foreach ($contacts__value->PhoneNumbers->Entry as $phones__value) {
                         if ($phones__value->_ == '') {
                             continue;
@@ -189,14 +181,14 @@ class ewshelper
                 }
                 $contacts[$contacts__key] = [
                     'id' => $contacts__value->ItemId->Id,
-                    'first_name' => @$contacts__value->GivenName != '' ? $contacts__value->GivenName : '',
-                    'last_name' => @$contacts__value->Surname != '' ? $contacts__value->Surname : '',
+                    'first_name' => ($contacts__value?->GivenName ?? '') != '' ? $contacts__value->GivenName : '',
+                    'last_name' => ($contacts__value?->Surname ?? '') != '' ? $contacts__value->Surname : '',
                     'company_name' => $contacts__value->CompanyName,
                     'emails' => $emails,
                     'phones' => $phones,
                     'url' => $contacts__value->BusinessHomePage,
                     'categories' =>
-                        @$contacts__value->Categories->String != '' ? $contacts__value->Categories->String : [],
+                        ($contacts__value?->Categories?->String ?? '') != '' ? $contacts__value->Categories->String : [],
                     'obj' => $contacts__value
                 ];
             }
@@ -207,7 +199,7 @@ class ewshelper
         return $contacts;
     }
 
-    public function normalizeData($id = null)
+    public function normalizeData(?string $id = null): array
     {
         try {
             $request = new UpdateItemType();
@@ -221,13 +213,13 @@ class ewshelper
 
         foreach ($contacts as $contacts__value) {
             $fullname = [];
-            if (@$contacts__value['obj']->Surname != '') {
+            if (($contacts__value['obj']?->Surname ?? '') != '') {
                 $fullname[] = trim($contacts__value['obj']->Surname);
             }
-            if (@$contacts__value['obj']->GivenName != '') {
+            if (($contacts__value['obj']?->GivenName ?? '') != '') {
                 $fullname[] = trim($contacts__value['obj']->GivenName);
             }
-            if (empty($fullname) && @$contacts__value['obj']->CompanyName != '') {
+            if (empty($fullname) && ($contacts__value['obj']?->CompanyName ?? '') != '') {
                 $fullname[] = trim($contacts__value['obj']->CompanyName);
             }
             $fullname = implode(', ', $fullname);
@@ -266,7 +258,7 @@ class ewshelper
             $field->Contact->DisplayName = $fullname;
             $change->Updates->SetItemField[] = $field;
 
-            if (@$contacts__value['obj']->Surname != '') {
+            if (($contacts__value['obj']?->Surname ?? '') != '') {
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_SURNAME;
@@ -275,7 +267,7 @@ class ewshelper
                 $change->Updates->SetItemField[] = $field;
             }
 
-            if (@$contacts__value['obj']->GivenName != '') {
+            if (($contacts__value['obj']?->GivenName ?? '') != '') {
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_GIVEN_NAME;
@@ -284,7 +276,7 @@ class ewshelper
                 $change->Updates->SetItemField[] = $field;
             }
 
-            if (@$contacts__value['obj']->CompanyName != '') {
+            if (($contacts__value['obj']?->CompanyName ?? '') != '') {
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_COMPANY_NAME;
@@ -293,7 +285,7 @@ class ewshelper
                 $change->Updates->SetItemField[] = $field;
             }
 
-            if (@$contacts__value['obj']->BusinessHomePage != '') {
+            if (($contacts__value['obj']?->BusinessHomePage ?? '') != '') {
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_BUSINESS_HOME_PAGE;
@@ -302,9 +294,9 @@ class ewshelper
                 $change->Updates->SetItemField[] = $field;
             }
 
-            if (!empty(@$contacts__value['obj']->PhoneNumbers->Entry)) {
+            if (!empty($contacts__value['obj']?->PhoneNumbers?->Entry)) {
                 foreach ($contacts__value['obj']->PhoneNumbers->Entry as $phones__value) {
-                    if (trim(@$phones__value->_) == '') {
+                    if (trim($phones__value?->_ ?? '') == '') {
                         continue;
                     }
                     $field = new SetItemFieldType();
@@ -349,33 +341,33 @@ class ewshelper
         }
     }
 
-    public function addContact($data)
+    public function addContact(array $data): array
     {
         try {
             $request = new CreateItemType();
             $contact = new ContactItemType();
 
-            if (@$data['first_name'] != '') {
+            if (($data['first_name'] ?? '') != '') {
                 $contact->GivenName = $data['first_name'];
             }
-            if (@$data['last_name'] != '') {
+            if (($data['last_name'] ?? '') != '') {
                 $contact->Surname = $data['last_name'];
             }
-            if (@$data['company_name'] != '') {
+            if (($data['company_name'] ?? '') != '') {
                 $contact->CompanyName = $data['company_name'];
             }
-            if (@$data['url'] != '') {
+            if (($data['url'] ?? '') != '') {
                 $contact->BusinessHomePage = $data['url'];
             }
 
-            if (!empty(@$data['categories'])) {
+            if (!empty($data['categories'])) {
                 $contact->Categories = new ArrayOfStringsType();
                 foreach ($data['categories'] as $categories__value) {
                     $contact->Categories->String[] = $categories__value;
                 }
             }
 
-            if (!empty(@$data['emails'])) {
+            if (!empty($data['emails'])) {
                 $contact->EmailAddresses = new EmailAddressDictionaryType();
                 foreach ($data['emails'] as $emails__key => $emails__value) {
                     $email = new EmailAddressDictionaryEntryType();
@@ -393,7 +385,7 @@ class ewshelper
                 }
             }
 
-            if (!empty(@$data['phones'])) {
+            if (!empty($data['phones'])) {
                 $contact->PhoneNumbers = new PhoneNumberDictionaryType();
                 foreach ($data['phones'] as $phones__key => $phones__value) {
                     foreach ($phones__value as $phones__value__key => $phones__value__value) {
@@ -436,7 +428,7 @@ class ewshelper
             $contact->FileAsMapping = FileAsMappingType::FIRST_SPACE_LAST;
 
             $request->Items = new NonEmptyArrayOfAllItemsType();
-            @$request->Items->Contact[] = $contact;
+            $request->Items->Contact[] = $contact;
             $response = $this->client->CreateItem($request);
 
             $id = $response->ResponseMessages->CreateItemResponseMessage[0]->Items->Contact[0]->ItemId->Id;
@@ -445,7 +437,7 @@ class ewshelper
             return [
                 'success' =>
                     $response->ResponseMessages->CreateItemResponseMessage[0]->ResponseClass === ResponseClassType::SUCCESS,
-                'message' => @$response->ResponseMessages->CreateItemResponseMessage[0]->MessageText,
+                'message' => $response?->ResponseMessages?->CreateItemResponseMessage[0]?->MessageText ?? null,
                 'data' => ['id' => $id]
             ];
         } catch (\Throwable $e) {
@@ -458,20 +450,21 @@ class ewshelper
         }
     }
 
-    public function removeContact($id)
+    public function removeContact(string $id): array
     {
         try {
             $request = new DeleteItemType();
             $request->DeleteType = DisposalType::HARD_DELETE;
-            $request->ItemIds = (object) [];
-            $request->ItemIds->ItemId = new ItemIdType();
-            $request->ItemIds->ItemId->Id = $id;
+            $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
+            $item = new ItemIdType();
+            $item->Id = $id;
+            $request->ItemIds->ItemId[] = $item;
             $response = $this->client->DeleteItem($request);
 
             return [
                 'success' =>
                     $response->ResponseMessages->DeleteItemResponseMessage[0]->ResponseClass === ResponseClassType::SUCCESS,
-                'message' => @$response->ResponseMessages->DeleteItemResponseMessage[0]->MessageText
+                'message' => $response?->ResponseMessages?->DeleteItemResponseMessage[0]?->MessageText ?? null
             ];
         } catch (\Throwable $e) {
             error_log('EWS removeContact error: ' . $e->getMessage());
@@ -482,7 +475,7 @@ class ewshelper
         }
     }
 
-    public function updateContact($id, $data)
+    public function updateContact(string $id, array $data): array
     {
         try {
             $request = new UpdateItemType();
@@ -493,7 +486,7 @@ class ewshelper
             $change->ItemId->Id = $id;
             $change->Updates = new NonEmptyArrayOfItemChangeDescriptionsType();
 
-        if (@$data['first_name'] != '') {
+        if (($data['first_name'] ?? '') != '') {
             $field = new SetItemFieldType();
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_GIVEN_NAME;
@@ -502,7 +495,7 @@ class ewshelper
             $change->Updates->SetItemField[] = $field;
         }
 
-        if (@$data['last_name'] != '') {
+        if (($data['last_name'] ?? '') != '') {
             $field = new SetItemFieldType();
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_SURNAME;
@@ -511,7 +504,7 @@ class ewshelper
             $change->Updates->SetItemField[] = $field;
         }
 
-        if (@$data['company_name'] != '') {
+        if (($data['company_name'] ?? '') != '') {
             $field = new SetItemFieldType();
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_COMPANY_NAME;
@@ -520,7 +513,7 @@ class ewshelper
             $change->Updates->SetItemField[] = $field;
         }
 
-        if (@$data['url'] != '') {
+        if (($data['url'] ?? '') != '') {
             $field = new SetItemFieldType();
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::CONTACTS_BUSINESS_HOME_PAGE;
@@ -529,7 +522,7 @@ class ewshelper
             $change->Updates->SetItemField[] = $field;
         }
 
-        if (!empty(@$data['categories'])) {
+        if (!empty($data['categories'])) {
             $field = new SetItemFieldType();
             $field->FieldURI = new PathToUnindexedFieldType();
             $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_CATEGORIES;
@@ -541,11 +534,11 @@ class ewshelper
             $change->Updates->SetItemField[] = $field;
         }
 
-        if (!empty(@$data['emails'])) {
+        if (!empty($data['emails'])) {
             foreach (['EMAIL_ADDRESS_1', 'EMAIL_ADDRESS_2', 'EMAIL_ADDRESS_3'] as $emails__key => $email__value) {
                 $constant = constant('jamesiarmes\PhpEws\Enumeration\EmailAddressKeyType::' . $email__value);
 
-                if (@$data['emails'][$emails__key] != '') {
+                if (($data['emails'][$emails__key] ?? '') != '') {
                     $field = new SetItemFieldType();
                     $field->IndexedFieldURI = new PathToIndexedFieldType();
                     $field->IndexedFieldURI->FieldURI = DictionaryURIType::CONTACTS_EMAIL_ADDRESS;
@@ -567,7 +560,7 @@ class ewshelper
             }
         }
 
-        if (!empty(@$data['phones'])) {
+        if (!empty($data['phones'])) {
             foreach (
                 [
                     'private' => ['HOME_PHONE', 'HOME_PHONE_2', 'OTHER_PHONE', 'MOBILE_PHONE'],
@@ -578,7 +571,7 @@ class ewshelper
                 foreach ($phones__value as $phones__value__key => $phones__value__value) {
                     $constant = constant('jamesiarmes\PhpEws\Enumeration\PhoneNumberKeyType::' . $phones__value__value);
 
-                    if (@$data['phones'][$phones__key][$phones__value__key] != '') {
+                    if (($data['phones'][$phones__key][$phones__value__key] ?? '') != '') {
                         $field = new SetItemFieldType();
                         $field->IndexedFieldURI = new PathToIndexedFieldType();
                         $field->IndexedFieldURI->FieldURI = DictionaryURIType::CONTACTS_PHONE_NUMBER;
@@ -629,7 +622,7 @@ class ewshelper
         }
     }
 
-    public function syncContacts($category, $contacts_new)
+    public function syncContacts(string $category, array $contacts_new): array
     {
         try {
             $this->normalizeData();
@@ -645,13 +638,13 @@ class ewshelper
 
         // normalize data beforehand (this is costly)
         foreach ($contacts_new as $contacts_new__key => $contacts_new__value) {
-            if (@$contacts_new__value['first_name'] != '') {
+            if (($contacts_new__value['first_name'] ?? '') != '') {
                 $contacts_new[$contacts_new__key]['first_name'] = trim($contacts_new__value['first_name']);
             }
-            if (@$contacts_new__value['last_name'] != '') {
+            if (($contacts_new__value['last_name'] ?? '') != '') {
                 $contacts_new[$contacts_new__key]['last_name'] = trim($contacts_new__value['last_name']);
             }
-            if (@$contacts_new__value['company_name'] != '') {
+            if (($contacts_new__value['company_name'] ?? '') != '') {
                 $contacts_new[$contacts_new__key]['company_name'] = trim($contacts_new__value['company_name']);
             }
             foreach ($contacts_new__value['phones'] as $phones__key => $phones__value) {
@@ -722,7 +715,7 @@ class ewshelper
         }
     }
 
-    public function removeDuplicates()
+    public function removeDuplicates(): array
     {
         try {
             $contacts_outlook_1 = $this->getContacts();
@@ -763,13 +756,13 @@ class ewshelper
         }
     }
 
-    private function contactsAreEqual($a, $b)
+    private function contactsAreEqual(array $a, array $b): bool
     {
         foreach (['a', 'b'] as $contact) {
-            if (@${$contact}['id'] != '') {
+            if ((${$contact}['id'] ?? '') != '') {
                 unset(${$contact}['id']);
             }
-            if (@${$contact}['obj'] != '') {
+            if ((${$contact}['obj'] ?? '') != '') {
                 unset(${$contact}['obj']);
             }
 

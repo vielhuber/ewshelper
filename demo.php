@@ -4,9 +4,13 @@ use vielhuber\ewshelper\ewshelper;
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-$ewshelper = new ewshelper(@$_SERVER['EWS_HOST'], @$_SERVER['EWS_USERNAME'], @$_SERVER['EWS_PASSWORD']);
+$ewshelper = new ewshelper(
+    $_SERVER['EWS_HOST'] ?? '',
+    $_SERVER['EWS_USERNAME'] ?? '',
+    $_SERVER['EWS_PASSWORD'] ?? ''
+);
 
-$switch = @$_GET['switch'];
+$switch = $_GET['switch'] ?? null;
 
 echo '<pre>';
 
@@ -14,12 +18,14 @@ if ($switch == 1) {
     $contacts = $ewshelper->getContacts();
     foreach ($contacts as $contacts__value) {
         var_dump($contacts__value);
+        break;
     }
+    var_dump(count($contacts));
 }
 
 if ($switch == 2) {
     $response = $ewshelper->getContact(
-        'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAUitU5XAAA='
+        'AQMkADBjNTdiODFlLTQxMzUtNGFjNi04NzI3LWVjZmEwMTk3NDYwOQBGAAADJjmX+yK7mEmOUOUGqiF02wcAL50WIKsNFU+H9tFGSqmpAAcAAANrAAAARrOqvKOMME2tE+7zSL+DNgAEswTp7wAAAA=='
     );
     var_dump($response);
 }
@@ -49,11 +55,11 @@ if ($switch == 5) {
     $response = $ewshelper->updateContact(
         'AAMkAGI4NWMxMGIzLTQ5MTctNGYyNy1hY2YzLWQ1YmZmMTA5ZjI5NgBGAAAAAADwZNIaQJ0wSJhwQ+Ev0+N8BwD9iZ7Ufh2ZQ6EkqgYz5YriAAABaHWVAADGiw/HQBXsRpCB1hsLE6h3AAD8XlYoAAA=',
         [
-            'first_name' => 'Felix',
-            'last_name' => 'Alcala',
-            'company_name' => 'Agilebytes',
-            'emails' => ['felix.alcala@agilebytes.de'],
-            'phones' => ['private' => ['08921558216'], 'business' => ['+49/1732658121999']],
+            'first_name' => 'Max',
+            'last_name' => 'Mustermann',
+            'company_name' => 'Musterfirma',
+            'emails' => ['max@mustermann.de'],
+            'phones' => ['private' => ['0123456789'], 'business' => ['9876543210']],
             'url' => 'https://www.mustermann.de',
             'categories' => ['test']
         ]

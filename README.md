@@ -7,7 +7,7 @@
 
 # 📇 ewshelper 📇
 
-ewshelper is a little wrapper around [php-ews](https://github.com/jamesiarmes/php-ews) and helps you manage your exchange contacts via php.\
+ewshelper is a little wrapper around a patched version of [php-ews](https://github.com/jamesiarmes/php-ews) and helps you manage your exchange contacts via php.\
 it can handle very big lists also helps you normalize your contacts data.
 
 ## installation

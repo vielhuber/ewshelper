@@ -1,0 +1,35 @@
+--- a/src/Type.php
++++ b/src/Type.php
+@@ -13,1 +13,2 @@
++#[\AllowDynamicProperties]
+ abstract class Type
+--- a/src/Type/EmailAddressDictionaryType.php
++++ b/src/Type/EmailAddressDictionaryType.php
+@@ -22,2 +22,2 @@
+-     * @var \jamesiarmes\PhpEws\Type\EmailAddressDictionaryEntryType
++     * @var \jamesiarmes\PhpEws\Type\EmailAddressDictionaryEntryType[]
+      */
+--- a/src/Type/ImAddressDictionaryType.php
++++ b/src/Type/ImAddressDictionaryType.php
+@@ -22,2 +22,2 @@
+-     * @var \jamesiarmes\PhpEws\Type\ImAddressDictionaryEntryType
++     * @var \jamesiarmes\PhpEws\Type\ImAddressDictionaryEntryType[]
+      */
+--- a/src/Type/PhoneNumberDictionaryType.php
++++ b/src/Type/PhoneNumberDictionaryType.php
+@@ -22,2 +22,2 @@
+-     * @var \jamesiarmes\PhpEws\Type\PhoneNumberDictionaryEntryType
++     * @var \jamesiarmes\PhpEws\Type\PhoneNumberDictionaryEntryType[]
+      */
+--- a/src/Type/PhysicalAddressDictionaryType.php
++++ b/src/Type/PhysicalAddressDictionaryType.php
+@@ -23,2 +23,2 @@
+-     * @var \jamesiarmes\PhpEws\Type\PhysicalAddressDictionaryEntryType
++     * @var \jamesiarmes\PhpEws\Type\PhysicalAddressDictionaryEntryType[]
+      */
+--- a/src/Request/UpdateItemType.php
++++ b/src/Request/UpdateItemType.php
+@@ -34,2 +34,2 @@
+-     * @var \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfItemChangesType
++     * @var \jamesiarmes\PhpEws\Type\ItemChangeType[]
+      */

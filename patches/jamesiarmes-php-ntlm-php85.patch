@@ -1,0 +1,17 @@
+--- a/src/SoapClient.php
++++ b/src/SoapClient.php
+@@ -13,1 +13,2 @@
++#[\AllowDynamicProperties]
+ class SoapClient extends \SoapClient
+@@ -46,2 +46,2 @@
+-    public function __construct($wsdl, array $options = null)
++    public function __construct(?string $wsdl, ?array $options = null)
+     {
+@@ -71,2 +71,2 @@
+-    public function __doRequest($request, $location, $action, $version, $one_way = 0)
++    public function __doRequest(string $request, string $location, string $action, int $version, bool $one_way = false, ?string $uriParserClass = null): ?string
+     {
+@@ -106,2 +106,2 @@
+-    public function __getLastRequestHeaders()
++    public function __getLastRequestHeaders(): ?string
+     {
