@@ -22,10 +22,10 @@
     "extra": {
         "patches": {
             "jamesiarmes/php-ntlm": {
-                "PHP 8.5 fixes": "patches/jamesiarmes-php-ntlm-php85.patch"
+                "PHP 8.5 fixes": "https://raw.githubusercontent.com/vielhuber/ewshelper/main/patches/jamesiarmes-php-ntlm-php85.patch"
             },
             "php-ews/php-ews": {
-                "PHP 8.5 fixes": "patches/php-ews-php85-fixes.patch"
+                "PHP 8.5 fixes": "https://raw.githubusercontent.com/vielhuber/ewshelper/main/patches/php-ews-php85-fixes.patch"
             }
         }
     }
