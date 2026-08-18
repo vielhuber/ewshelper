@@ -5,3 +5,5 @@
 /node_modules
 /package-lock.json
 /patches.lock.json
+/.phpunit.result.cache
+/.phpunit.cache
