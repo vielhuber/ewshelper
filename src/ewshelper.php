@@ -91,7 +91,7 @@ class ewshelper
 
             foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message) {
                 if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
-                    continue;
+                    throw EwsHelperException::responseFailed('FindItem', $response_message);
                 }
                 $contacts = array_merge($contacts, $response_message->RootFolder->Items->Contact);
                 $last_page = $response_message->RootFolder->IncludesLastItemInRange;
@@ -100,6 +100,9 @@ class ewshelper
                     $request->IndexedPageItemView->Offset = $limit * $page_number;
                     $response = $this->client->FindItem($request);
                     foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message_this) {
+                        if ($response_message_this->ResponseClass != ResponseClassType::SUCCESS) {
+                            throw EwsHelperException::responseFailed('FindItem', $response_message_this);
+                        }
                         $contacts = array_merge($contacts, $response_message_this->RootFolder->Items->Contact);
                         $last_page = $response_message_this->RootFolder->IncludesLastItemInRange;
                     }
@@ -143,7 +146,7 @@ class ewshelper
                         $response = $this->client->GetItem($request);
                         foreach ($response->ResponseMessages->GetItemResponseMessage as $response_message) {
                             if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
-                                continue;
+                                throw EwsHelperException::responseFailed('GetItem', $response_message);
                             }
                             foreach ($response_message->Items->Contact as $item) {
                                 if (!empty($item?->EmailAddresses?->Entry)) {
@@ -192,8 +195,10 @@ class ewshelper
                     'obj' => $contacts__value
                 ];
             }
+        } catch (EwsHelperException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            echo 'Catched error: ' . $e->getMessage() . '<br/>';
+            throw EwsHelperException::requestFailed($e);
         }
 
         return $contacts;
@@ -705,6 +710,9 @@ class ewshelper
                     'created' => count($contacts_to_create)
                 ]
             ];
+        } catch (EwsHelperException $e) {
+            // an incomplete exchange list would lead to mass creations and deletions
+            throw $e;
         } catch (\Throwable $e) {
             error_log('EWS syncContacts error: ' . $e->getMessage());
             return [
