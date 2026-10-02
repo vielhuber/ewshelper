@@ -115,22 +115,6 @@ $ewshelper->syncContacts('test', [
 ]);
 ```
 
-## error handling
-
-`getContacts()`, `getContact()` and `syncContacts()` throw a `vielhuber\ewshelper\EwsHelperException`\
-if the exchange contacts cannot be read completely (connection, soap or ews response errors).\
-in this case `syncContacts()` neither creates nor deletes any contacts.\
-all other errors are returned as `['success' => false, 'message' => '...']`.
-
-```php
-use vielhuber\ewshelper\EwsHelperException;
-try {
-    $ewshelper->syncContacts('test', $contacts);
-} catch (EwsHelperException $e) {
-    error_log($e->getMessage());
-}
-```
-
 ## note on outlook
 
 when deleting phone numbers or making a lot of changes to existing contacts,\
