@@ -91,7 +91,12 @@ class ewshelper
 
             foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message) {
                 if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
-                    throw EwsHelperException::responseFailed('FindItem', $response_message);
+                    throw new \RuntimeException(
+                        'EWS FindItem failed (' .
+                            $response_message->ResponseCode .
+                            '): ' .
+                            $response_message->MessageText
+                    );
                 }
                 $contacts = array_merge($contacts, $response_message->RootFolder->Items->Contact);
                 $last_page = $response_message->RootFolder->IncludesLastItemInRange;
@@ -101,7 +106,12 @@ class ewshelper
                     $response = $this->client->FindItem($request);
                     foreach ($response->ResponseMessages->FindItemResponseMessage as $response_message_this) {
                         if ($response_message_this->ResponseClass != ResponseClassType::SUCCESS) {
-                            throw EwsHelperException::responseFailed('FindItem', $response_message_this);
+                            throw new \RuntimeException(
+                                'EWS FindItem failed (' .
+                                    $response_message_this->ResponseCode .
+                                    '): ' .
+                                    $response_message_this->MessageText
+                            );
                         }
                         $contacts = array_merge($contacts, $response_message_this->RootFolder->Items->Contact);
                         $last_page = $response_message_this->RootFolder->IncludesLastItemInRange;
@@ -146,7 +156,12 @@ class ewshelper
                         $response = $this->client->GetItem($request);
                         foreach ($response->ResponseMessages->GetItemResponseMessage as $response_message) {
                             if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
-                                throw EwsHelperException::responseFailed('GetItem', $response_message);
+                                throw new \RuntimeException(
+                                    'EWS GetItem failed (' .
+                                        $response_message->ResponseCode .
+                                        '): ' .
+                                        $response_message->MessageText
+                                );
                             }
                             foreach ($response_message->Items->Contact as $item) {
                                 if (!empty($item?->EmailAddresses?->Entry)) {
@@ -195,10 +210,10 @@ class ewshelper
                     'obj' => $contacts__value
                 ];
             }
-        } catch (EwsHelperException $e) {
+        } catch (\RuntimeException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            throw EwsHelperException::requestFailed($e);
+            throw new \RuntimeException('EWS request failed: ' . $e->getMessage(), 0, $e);
         }
 
         return $contacts;
@@ -710,7 +725,7 @@ class ewshelper
                     'created' => count($contacts_to_create)
                 ]
             ];
-        } catch (EwsHelperException $e) {
+        } catch (\RuntimeException $e) {
             // an incomplete exchange list would lead to mass creations and deletions
             throw $e;
         } catch (\Throwable $e) {
